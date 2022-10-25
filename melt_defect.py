@@ -12,17 +12,19 @@ def rotate_img(img):
     return cv.warpAffine(img, M, (w, h))
 
 def struct_mask_image(mask_path):
+    new_width = 4320
+    new_height = 4320
     mask = cv.imread(mask_path)
     mask = rotate_img(mask)
 
     rows, cols = mask.shape[:2]
-    mask = cv.resize(mask, (1024, 1024))
-    mask = cv.resize(mask, None, fx=1.45, fy=1.46, interpolation=cv.INTER_LINEAR)
+    mask = cv.resize(mask, (new_width, new_height))
+    mask = cv.resize(mask, None, fx=1.46, fy=1.48, interpolation=cv.INTER_LINEAR)
 
     # shift image
-    M = np.float32([[1, 0, 20], [0, 1, 55]])
-    mask = cv.warpAffine(mask, M, (cols, rows), borderValue=(255, 255, 255))
-    mask = mask[0:1024, 0:1024]
+    M = np.float32([[1, 0, 70], [0, 1, 200]])
+    mask = cv.warpAffine(mask, M, (new_width, new_height), borderValue=(255, 255, 255))
+    mask = mask[0:new_width, 0:new_height]
 
     return mask
 

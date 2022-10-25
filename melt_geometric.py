@@ -8,18 +8,20 @@ import numpy as np
 from utils import progress_bar
 
 def geometric_transform(src_file, dst_file):
+	new_width = 4320
+	new_height = 4320
 	src_img = cv.imread(src_file)
 
-	# origin picture points
+	# origin picture points, get from Data/Geometric/origin.json
 	pts1 = np.float32([[627.2307, 166.6923], [4161.8461, 185.9230],
                        [350.3076, 3616.6923], [4442.6153, 3620.5384]])
 	# new picture points
-	pts2 = np.float32([[0, 0], [1024, 0], [0, 1024], [1024, 1024]])
+	pts2 = np.float32([[0, 0], [new_width, 0], [0, new_height], [new_width, new_height]])
 
 	# Generate transform matrix
 	M = cv.getPerspectiveTransform(pts1, pts2)
 	# GeometricTransformations
-	out = cv.warpPerspective(src_img, M, (1024, 1024))
+	out = cv.warpPerspective(src_img, M, (new_width, new_height))
 
 	cv.imwrite(dst_file, out)
 
