@@ -169,6 +169,19 @@ Also can use the following command
 make defects
 ```
 
+#### Isolate Every Workpiece in Image
+To have a better analysis for every workpiece, need to isolate them from image. Therefore, using [melt_contour.py](melt_contour.py) to isolate workpiece from image by using mask image (*.bmp).
+
+Format:
+```
+python3 melt_contour.py --src <source image path> --mask <mask image path> --dst <destination image path>
+```
+
+Also can use the following command
+```
+make contour
+```
+
 ## Reference
 * if you do not want to use Mask R-CNN, please go to [model_zoo](https://github.com/facebookresearch/detectron2/blob/main/MODEL_ZOO.md)
 

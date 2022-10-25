@@ -28,6 +28,9 @@ geometric:
 defect: geometric
 	python3 melt_defect.py --src $(DEFECTS_SRC_DIR) --mask $(DEFECTS_MASK_DIR) --dst $(DEFECTS_DST_DIR)
 
+contour: defect
+	python3 melt_contour.py --src $(CONTOUR_SRC_DIR) --dst $(CONTOUR_DST_DIR)
+
 clean:
 	-@$(RM) -r $(RESULT_PATH)
 
