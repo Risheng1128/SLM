@@ -1,0 +1,25 @@
+RESULT_PATH = ./Result/
+DATA_PATH = ./Data/
+MODEL_PATH = ./Model/
+
+# the path to get coco format files and train them
+COCO_SRC_DIR = $(DATA_PATH)Recoat/
+COCO_DST_DIR = $(RESULT_PATH)COCO/
+TRAIN_SRC_DIR = $(RESULT_PATH)COCO/
+TRAIN_DST_DIR = $(RESULT_PATH)Model/
+
+# the path to load model and detect recoating defects
+DETECT_SRC_DIR = $(DATA_PATH)Recoat/
+DETECT_DST_DIR = $(RESULT_PATH)Detect/
+DETECT_MODEL = $(MODEL_PATH)recoat.pth
+
+# the geometric transform files
+GEOMETIC_SRC_DIR = $(DATA_PATH)Melt/
+GEOMETIC_DST_DIR = $(RESULT_PATH)Melt_Geometric/
+
+DEFECTS_SRC_DIR = $(GEOMETIC_DST_DIR)
+DEFECTS_MASK_DIR = $(DATA_PATH)Melt_Mask/
+DEFECTS_DST_DIR = $(RESULT_PATH)Melt/
+
+MASK_SRC_DIR = $(DATA_PATH)Recoat/
+MASK_DST_DIR = $(RESULT_PATH)Mask/
