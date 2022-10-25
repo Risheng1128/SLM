@@ -88,6 +88,7 @@ make mask
 
 #### Load model and detect image
 Using [recoat_detect.py](recoat_detect.py) to load recoating model and detect the images. By default, it uses the `recoat.pth` model in folder `Model`
+
 Format:
 ```
 python3 recoat_detect.py --src <source image path> --dst <destination image path> --model <model path>
@@ -105,6 +106,15 @@ make detect
 
 #### Recoat Detecting System
 Using [recoat_system.py](recoat_system.py) to open the recoat detecting system
+
+First, download the pyqt5
+```
+$ sudo apt-get install qt5-default
+$ sudo apt-get install qttools5-dev-tools
+$ sudo pip3 install pyqt5
+```
+
+And use the following command.
 
 Example:
 ```
