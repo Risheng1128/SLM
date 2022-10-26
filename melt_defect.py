@@ -4,6 +4,8 @@ import sys
 import os
 import glob
 import argparse
+import colorama
+from utils import progress_bar
 
 def rotate_img(img):
     (h, w, d) = img.shape
@@ -54,6 +56,7 @@ if __name__ == "__main__":
     print("Output dir = ", args.dst)
 
     for i in range(image_total):
+        progress_bar(i, image_total - 1, color=colorama.Fore.YELLOW)
         result_path = args.dst + img_list[i].split('/')[-1] + "/"
         if not os.path.isdir(result_path):
             os.makedirs(result_path)

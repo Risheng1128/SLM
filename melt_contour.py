@@ -3,6 +3,8 @@ import numpy as np
 import argparse
 import glob
 import os
+import colorama
+from utils import progress_bar
 
 # get the contours of image
 def get_contour(img):
@@ -26,12 +28,14 @@ if __name__ == '__main__':
         os.makedirs(args.dst)
 
     mask_list = glob.glob(args.src + '**/*.bmp')
-    for mask_path in mask_list:
-        img = cv.imread(mask_path, cv.COLOR_BGR2GRAY)
+    list_num = len(mask_list)
+    for i in range(list_num):
+        progress_bar(i, list_num - 1, color=colorama.Fore.YELLOW)
+        img = cv.imread(mask_list[i], cv.COLOR_BGR2GRAY)
         contours = get_contour(img)
 
         # create output path
-        output_path = args.dst + mask_path.split('/')[-1] + '/'
+        output_path = args.dst + mask_list[i].split('/')[-1] + '/'
         if not os.path.isdir(output_path):
             os.makedirs(output_path)
 
