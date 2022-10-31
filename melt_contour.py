@@ -31,23 +31,32 @@ if __name__ == '__main__':
     list_num = len(mask_list)
     for i in range(list_num):
         progress_bar(i, list_num - 1, color=colorama.Fore.YELLOW)
-        img = cv.imread(mask_list[i], cv.COLOR_BGR2GRAY)
-        contours = get_contour(img)
+        # read mask image
+        origin_mask_img = cv.imread(mask_list[i], cv.COLOR_BGR2GRAY)
+        # find all contours in mask
+        contours = get_contour(origin_mask_img)
+
+        # the absolutely path of mask folder
+        mask_path_list = mask_list[i].split('/')
+        mask_path = ""
+        for i in mask_path_list[0:-1]:
+            mask_path += i + '/'
+        origin_img = cv.imread(mask_path + 'origin.jpg', cv.COLOR_BGR2GRAY)        
 
         # create output path
-        output_path = args.dst + mask_list[i].split('/')[-1] + '/'
+        output_path = args.dst + mask_path_list[-1] + '/'
         if not os.path.isdir(output_path):
             os.makedirs(output_path)
 
-        cv.imwrite(output_path + 'origin.bmp', img)
+        cv.imwrite(output_path + 'mask.bmp', origin_mask_img)
+        cv.imwrite(output_path + 'origin.jpg', origin_img)
         index = 0
         for c in contours:
             # eliminate contour that is too small 
             if cv.contourArea(c) < 20:
                 continue
 
-            mask = np.zeros(img.shape, dtype='uint8')
+            mask = np.zeros(origin_mask_img.shape, dtype='uint8')
             cv.drawContours(mask, [c], -1, (255, 255, 255), -1)
-            # cv.imwrite(args.dst + str(i) + '.jpg', cv.bitwise_and(test_img, mask))
-            cv.imwrite(output_path + str(index) + '.jpg', mask)
+            cv.imwrite(output_path + str(index) + '.jpg', cv.bitwise_and(origin_img, mask))
             index += 1
