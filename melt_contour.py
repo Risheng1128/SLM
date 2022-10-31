@@ -14,6 +14,18 @@ def get_contour(img):
     contours, _ = cv.findContours(canny_img.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     return contours
 
+# move the item isolated from original image to the median of image
+# default image size = 4320 * 4320
+def move_item_median(img, contour, median_width=2160, median_height=2160):
+    # get the center of contour
+    M = cv.moments(contour)
+    c_width = int(M["m10"]/M["m00"])
+    c_height = int(M["m01"]/M["m00"])
+
+    M = np.float32([[1, 0, median_width - c_width], [0, 1, median_height - c_height]])
+    img = cv.warpAffine(img, M, (median_width * 2, median_height * 2))
+    return img
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--src', help = 'source folder path')
@@ -58,5 +70,6 @@ if __name__ == '__main__':
 
             mask = np.zeros(origin_mask_img.shape, dtype='uint8')
             cv.drawContours(mask, [c], -1, (255, 255, 255), -1)
-            cv.imwrite(output_path + str(index) + '.jpg', cv.bitwise_and(origin_img, mask))
+            result_img = move_item_median(cv.bitwise_and(origin_img, mask), c)
+            cv.imwrite(output_path + str(index) + '.jpg', result_img)
             index += 1
