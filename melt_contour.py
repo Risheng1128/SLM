@@ -70,6 +70,20 @@ if __name__ == '__main__':
 
             mask = np.zeros(origin_mask_img.shape, dtype='uint8')
             cv.drawContours(mask, [c], -1, (255, 255, 255), -1)
-            result_img = move_item_median(cv.bitwise_and(origin_img, mask), c)
-            cv.imwrite(output_path + str(index) + '.jpg', result_img)
+
+            # separate workpieces image
+            workpiece_img = cv.bitwise_and(origin_img, mask)
+            cv.imwrite(output_path + 'workpiece_' + str(index) + '.jpg', workpiece_img)
+
+            # move workpieces median
+            median_img = move_item_median(workpiece_img, c)
+            cv.imwrite(output_path + 'median_' + str(index) + '.jpg', median_img)
+
+            # the mask image of separate workpieces
+            workpiece_mask_img = cv.bitwise_or(origin_mask_img, cv.bitwise_not(mask))
+            cv.imwrite(output_path + 'workpiece_mask_' + str(index) + '.jpg', workpiece_mask_img)
+
+            # ~(workpiece + workpiece_mask)
+            workpiece_not_or_img = cv.bitwise_not(cv.bitwise_or(workpiece_img, workpiece_mask_img))
+            cv.imwrite(output_path + 'workpiece_not_or' + str(index) + '.jpg', workpiece_not_or_img)
             index += 1
