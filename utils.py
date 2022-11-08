@@ -77,18 +77,6 @@ def dice_folder(ground_truth, prediction):
 
     return sum(dice) / len(dice)
 
-def plot_samples(dataset_name, n=1):
-    dataset_custom = DatasetCatalog.get(dataset_name)
-    dataset_custom_metadata = MetadataCatalog.get(dataset_name)
-
-    for s in random.sample(dataset_custom, n):
-        img = cv2.imread(s["file_name"])
-        v = Visualizer(img[:, :, ::-1], metadata=dataset_custom_metadata, scale=0.5)
-        v = v.draw_dataset_dict(s)
-        plt.figure(figsize=(20, 20))
-        plt.imshow(v.get_image())
-        plt.show()
-
 def regist_dataset(src_path):
     ## Regist Dataset
     register_coco_instances(name="Example", metadata={},
