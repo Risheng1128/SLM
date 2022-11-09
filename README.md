@@ -182,6 +182,20 @@ Also can use the following command
 make contour
 ```
 
+#### Computed Tomography (CT)
+Using computed tomography image make us observe workpiece quality more clearly. In this project, using file `melt_jpg2dicom.py` to convert the `.jpg` files to `.dcm` files which usually are applied in biomedical field. On the other hand, display the dicom image by file `melt_dicom_viewer.py` the reference to [QtVTKDICOMViewer](https://github.com/RasmusRPaulsen/QtVTKDICOMViewer).
+
+Format:
+```
+python3 melt_jpg2dicom.py --src <source image path> --dst <destination image path>
+python3 melt_dicom_viewer.py
+```
+
+Also can use the following command
+```
+make computed_tomography
+```
+
 ## Reference
 * if you do not want to use Mask R-CNN, please go to [model_zoo](https://github.com/facebookresearch/detectron2/blob/main/MODEL_ZOO.md)
 
