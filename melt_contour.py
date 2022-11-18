@@ -39,51 +39,42 @@ if __name__ == '__main__':
         print('No directory. Construct one')
         os.makedirs(args.dst)
 
-    mask_list = glob.glob(args.src + '**/*.bmp')
-    list_num = len(mask_list)
-    for i in range(list_num):
-        progress_bar(i, list_num - 1, color=colorama.Fore.YELLOW)
-        # read mask image
-        origin_mask_img = cv.imread(mask_list[i], cv.COLOR_BGR2GRAY)
-        # find all contours in mask
-        contours = get_contour(origin_mask_img)
+    # get layer number
+    mask_list = list(enumerate(glob.glob(args.src + '**/*.bmp')))
+    mask_list = sorted([i[1] for i in mask_list])
+    mask_num = len(mask_list)
 
-        # the absolutely path of mask folder
-        mask_path_list = mask_list[i].split('/')
-        mask_path = ""
-        for i in mask_path_list[0:-1]:
-            mask_path += i + '/'
-        origin_img = cv.imread(mask_path + 'origin.jpg', cv.COLOR_BGR2GRAY)        
+    origin_list = list(enumerate(glob.glob(args.src + '**/origin.jpg')))
+    origin_list = sorted([i[1] for i in origin_list])
 
-        # create output path
-        output_path = args.dst + mask_path_list[-1] + '/'
-        if not os.path.isdir(output_path):
-            os.makedirs(output_path)
+    # layer
+    for i in range(mask_num):
+        progress_bar(i, mask_num - 1, color=colorama.Fore.YELLOW)
+        # read mask and origin image
+        mask_img = cv.imread(mask_list[i], cv.COLOR_BGR2GRAY)
+        origin_img = cv.imread(origin_list[i], cv.COLOR_BGR2GRAY)
 
-        cv.imwrite(output_path + 'mask.bmp', origin_mask_img)
-        cv.imwrite(output_path + 'origin.jpg', origin_img)
-        index = 0
-        for c in contours:
+        # find all contours in mask (item number)
+        contours = get_contour(mask_img)
+
+        # workpiece
+        for c in range(len(contours)):
             # eliminate contour that is too small 
-            if cv.contourArea(c) < 20:
+            if cv.contourArea(contours[c]) < 20:
                 continue
 
-            mask = np.zeros(origin_mask_img.shape, dtype='uint8')
-            cv.drawContours(mask, [c], -1, (255, 255, 255), -1)
+            # create output path
+            output_path = args.dst + 'item' + str(c + 1) + '/'
+            if not os.path.isdir(output_path):
+                os.makedirs(output_path)
+
+            mask = np.zeros(mask_img.shape, dtype='uint8')
+            cv.drawContours(mask, [contours[c]], -1, (255, 255, 255), -1)
 
             # separate workpieces image
             workpiece_img = cv.bitwise_and(origin_img, mask)
-            cv.imwrite(output_path + 'workpiece_' + str(index) + '.jpg', workpiece_img)
-
-            # move workpieces median
-            median_img = move_item_median(workpiece_img, c)
-            cv.imwrite(output_path + 'median_' + str(index) + '.jpg', median_img)
-
-            # the mask image of separate workpieces
-            workpiece_mask_img = cv.bitwise_or(origin_mask_img, cv.bitwise_not(mask))
-            cv.imwrite(output_path + 'workpiece_mask_' + str(index) + '.jpg', workpiece_mask_img)
-
-            # ~(workpiece + workpiece_mask)
-            workpiece_not_or_img = cv.bitwise_not(cv.bitwise_or(workpiece_img, workpiece_mask_img))
-            cv.imwrite(output_path + 'workpiece_not_or' + str(index) + '.jpg', workpiece_not_or_img)
-            index += 1
+            workpiece_img = move_item_median(workpiece_img, contours[c])
+            if i < 9:
+                cv.imwrite(output_path + 'layer_0' + str(i + 1) + '.jpg', workpiece_img)
+            else:
+                cv.imwrite(output_path + 'layer_' + str(i + 1) + '.jpg', workpiece_img)
