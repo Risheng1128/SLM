@@ -182,6 +182,19 @@ Also can use the following command
 make contour
 ```
 
+#### Gray Level Co-occurrence Matrix (GLCM)
+Because the defects in image is difficult to identify, introducing the GLCM to enhance the feature of melting defects in image.
+
+Format:
+```
+python3 melt_plot_glcm.py --src <source image path> --dst <destination image path>
+```
+
+Also can use the following command
+```
+make glcm
+```
+
 #### Computed Tomography (CT)
 Using computed tomography image make us observe workpiece quality more clearly. In this project, using file `melt_jpg2dicom.py` to convert the `.jpg` files to `.dcm` files which usually are applied in biomedical field. On the other hand, display the dicom image by file `melt_dicom_viewer.py` the reference to [QtVTKDICOMViewer](https://github.com/RasmusRPaulsen/QtVTKDICOMViewer).
 

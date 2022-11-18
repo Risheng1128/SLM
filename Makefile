@@ -33,6 +33,9 @@ defect: geometric
 contour: defect
 	$(PYTHON) melt_contour.py --src $(CONTOUR_SRC_DIR) --dst $(CONTOUR_DST_DIR)
 
+glcm: fast_glcm.py
+	$(PYTHON) melt_plot_glcm.py --src $(GLCM_SRC_PATH) --dst $(GLCM_DST_DIR)
+
 computed_tomography:
 	$(PYTHON) melt_jpg2dicom.py --src $(DICOM_SRC_DIR) --dst $(DICOM_DST_DIR)
 	$(PYTHON) melt_dicom_viewer.py
@@ -45,5 +48,10 @@ labelme2coco.py:
 	-@wget -q https://raw.githubusercontent.com/wkentaro/labelme/main/examples/instance_segmentation/labelme2coco.py
 	@echo "File labelme2coco.py was patched."
 
+# Download fast_glcm.py from LinghuiXia/GLCM repository
+fast_glcm.py:
+	-@wget -q https://raw.githubusercontent.com/tzm030329/GLCM/master/fast_glcm.py
+	@echo "File fast_glcm.py was patched."
+
 distclean: clean
-	-@$(RM) labelme2coco.py
+	-@$(RM) labelme2coco.py fast_glcm.py
