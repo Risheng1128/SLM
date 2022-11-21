@@ -67,19 +67,8 @@ if __name__ == "__main__":
         cv.imwrite(result_path + "origin.jpg", real_img)
         cv.imwrite(result_path + mask_list[i].split('/')[-1], real_mask)
         cv.imwrite(result_path + "or.jpg", cv.bitwise_or(real_mask, real_img))
-        cv.imwrite(result_path + "and.jpg", cv.bitwise_and(real_mask, real_img))
-        cv.imwrite(result_path + "xor.jpg", cv.bitwise_xor(real_mask, real_img))
-        cv.imwrite(result_path + "not_and.jpg", cv.bitwise_not(cv.bitwise_and(real_mask, real_img)))
-        cv.imwrite(result_path + "and_not_img.jpg", cv.bitwise_and(real_mask, cv.bitwise_not(real_img)))
         cv.imwrite(result_path + "or_not_img.jpg", cv.bitwise_or(real_mask, cv.bitwise_not(real_img)))
         cv.imwrite(result_path + "and_not_mask.jpg", cv.bitwise_and(cv.bitwise_not(real_mask), real_img))
-        cv.imwrite(result_path + "or_not_mask.jpg", cv.bitwise_or(cv.bitwise_not(real_mask), real_img))
-        cv.imwrite(result_path + "xor_not.jpg", cv.bitwise_xor(cv.bitwise_not(real_mask), real_img))
-
-        # Create binary image
-        not_or_img = cv.bitwise_not(cv.bitwise_or(real_mask, real_img))
-        cv.imwrite(result_path + "not_or.jpg", not_or_img)
-        ret, not_or_img = cv.threshold(not_or_img, 135, 255, cv.THRESH_BINARY)
-        cv.imwrite(result_path + "not_or_binary.jpg", not_or_img)
+        cv.imwrite(result_path + "not_or.jpg", cv.bitwise_not(cv.bitwise_or(real_mask, real_img)))
 
     print("Complete!")
