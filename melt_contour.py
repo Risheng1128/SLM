@@ -6,6 +6,10 @@ import os
 import colorama
 from utils import progress_bar
 
+# crop the image
+def crop_image(img, x=1648, y=1648, width=1024, height=1024):
+    return img[y:y+height, x:x+width]
+
 # get the contours of image
 def get_contour(img):
     ret, binary = cv.threshold(img, 127, 255, cv.THRESH_BINARY)
@@ -74,6 +78,8 @@ if __name__ == '__main__':
             # separate workpieces image
             workpiece_img = cv.bitwise_and(origin_img, mask)
             workpiece_img = move_item_median(workpiece_img, contours[c])
+            workpiece_img = crop_image(workpiece_img)
+
             if i < 9:
                 cv.imwrite(output_path + 'layer_0' + str(i + 1) + '.jpg', workpiece_img)
             else:
