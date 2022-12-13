@@ -48,10 +48,5 @@ labelme2coco.py:
 	-@wget -q https://raw.githubusercontent.com/wkentaro/labelme/main/examples/instance_segmentation/labelme2coco.py
 	@echo "File labelme2coco.py was patched."
 
-# Download fast_glcm.py from LinghuiXia/GLCM repository
-fast_glcm.py:
-	-@wget -q https://raw.githubusercontent.com/tzm030329/GLCM/master/fast_glcm.py
-	@echo "File fast_glcm.py was patched."
-
 distclean: clean
 	-@$(RM) labelme2coco.py fast_glcm.py
