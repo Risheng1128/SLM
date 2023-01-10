@@ -32,15 +32,14 @@ def move_item_median(img, contour, median_width=2160, median_height=2160):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src', help = 'source folder path')
-    parser.add_argument('--dst', help = 'destination of folder path')
+    parser.add_argument('--src', help = 'source path')
+    parser.add_argument('--dst', help = 'destination path')
     args = parser.parse_args()
 
     if not args.src:
-        raise AssertionError('Source path not found!!')
+        raise AssertionError('Error: source path not found!')
 
     if not os.path.isdir(args.dst):
-        print('No directory. Construct one')
         os.makedirs(args.dst)
 
     # get layer number

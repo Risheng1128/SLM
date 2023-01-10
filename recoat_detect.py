@@ -6,8 +6,8 @@ import argparse
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--src", help = "source folder path")
-    parser.add_argument("--dst", help = "destination of folder path")
+    parser.add_argument("--src", help = "source path")
+    parser.add_argument("--dst", help = "destination path")
     parser.add_argument("--model", help = "model path")
     args = parser.parse_args()
 

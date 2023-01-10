@@ -32,9 +32,9 @@ def struct_mask_image(mask_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--src", help = "source folder path")
-    parser.add_argument("--mask", help = "mask folder path")
-    parser.add_argument("--dst", help = "destination of folder path")
+    parser.add_argument("--src", help = "source path")
+    parser.add_argument("--mask", help = "mask path")
+    parser.add_argument("--dst", help = "destination path")
     args = parser.parse_args()
 
     img_list = list(enumerate(glob.glob(args.src + "*.jpg")))
@@ -45,10 +45,9 @@ if __name__ == "__main__":
     mask_total = int(len(mask_list))
 
     if (not image_total) or (not mask_total):
-    	raise AssertionError("No input image!!")
+    	raise AssertionError("Error: no input image!")
 
     if not os.path.isdir(args.dst):
-        print("No directory. Construct one")
         os.makedirs(args.dst)
 
     print("Input image dir = ", args.src)

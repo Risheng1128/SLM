@@ -8,15 +8,14 @@ if __name__ == '__main__':
 	default_uid = pydicom.uid.generate_uid()
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--src', help = 'source folder path')
-	parser.add_argument('--dst', help = 'destination of folder path')
+	parser.add_argument('--src', help = 'source path')
+	parser.add_argument('--dst', help = 'destination path')
 	args = parser.parse_args()
 
 	if not args.src:
-	    raise AssertionError('Source path not found!!')
+	    raise AssertionError('Error: source path not found!')
 
 	if not os.path.isdir(args.dst):
-		print('No directory. Construct one')
 		os.makedirs(args.dst)
 
 	image_list = glob.glob(args.src + '*.jpg')

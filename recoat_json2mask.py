@@ -16,9 +16,10 @@ def convert_to_mask(src_path = "./Data/Example/", dst_path = "./Data/Mask/"):
 
 if __name__ == "__main__":
    parser = argparse.ArgumentParser()
-   parser.add_argument("--src", help = "source file path")
-   parser.add_argument("--dst", help = "destination of produce path")
+   parser.add_argument("--src", help = "source path")
+   parser.add_argument("--dst", help = "destination path")
    args = parser.parse_args()
+
    if args.src and args.dst:
       convert_to_mask(args.src, args.dst)
    else:

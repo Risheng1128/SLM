@@ -33,23 +33,20 @@ def create_calibration_picture(src_path, dst_path):
 	for i, image in enumerate(src_img):
 		progress_bar(i, total - 1, color=colorama.Fore.YELLOW)
 		geometric_transform(image, dst_path + image.split('/')[-1])
-	print("\r\n")
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--src", help = "source folder path")
-	parser.add_argument("--dst", help = "destination of folder path")
+	parser.add_argument("--src", help = "source path")
+	parser.add_argument("--dst", help = "destination path")
 	args = parser.parse_args()
 
 	if not args.src:
-		raise AssertionError("Error: Please input correct folder path")
+		raise AssertionError("Error: source path not found!")
 
 	if not os.path.exists(args.dst):
-		print("Create output folder")
 		os.makedirs(args.dst)
 
 	print("Input dir = ", args.src)
 	print("Output dir = ", args.dst)
-	print("Start geometric transform!!")
 	create_calibration_picture(args.src, args.dst)
-	print("complete!")
+	print("Complete!")
