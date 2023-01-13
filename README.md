@@ -151,26 +151,8 @@ Also can use the following command
 make geometric
 ```
 
-#### Find Melting Defects
-To find the melted defects in image, using [melt_defect.py](melt_defect.py) to get different logic operation image with source image and mask image. This project mainly find the spattering defects in workpiece.
-
-Format:
-```
-python3 melt_defect.py --src <source image path> --mask <mask image path> --dst <destination image path>
-```
-
-Example:
-```
-python3 melt_defect.py --src ./Result/Melt_Geometric/ --mask ./Data/Melt_Mask/ --dst ./Result/Melt/
-```
-
-Also can use the following command
-```
-make defects
-```
-
 #### Isolate Every Workpiece in Image
-To have a better analysis for every workpiece, need to isolate them from image. Therefore, using [melt_contour.py](melt_contour.py) to isolate workpiece from image by using mask image (*.bmp).
+To have a better analysis for every workpieces, need to isolate them from image. Therefore, using [melt_contour.py](melt_contour.py) to isolate workpiece from image by using mask image (*.bmp).
 
 Format:
 ```

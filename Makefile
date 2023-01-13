@@ -26,12 +26,9 @@ recoat_system:
 geometric:
 	$(PYTHON) melt_geometric.py --src $(GEOMETIC_SRC_DIR) --dst $(GEOMETIC_DST_DIR)
 
-# do some logic operation and output the melted defects
-defect: geometric
-	$(PYTHON) melt_defect.py --src $(DEFECTS_SRC_DIR) --mask $(DEFECTS_MASK_DIR) --dst $(DEFECTS_DST_DIR)
-
-contour: defect
-	$(PYTHON) melt_contour.py --src $(CONTOUR_SRC_DIR) --dst $(CONTOUR_DST_DIR)
+# isolate every workpieces in image
+contour: geometric
+	$(PYTHON) melt_contour.py --src $(CONTOUR_SRC_DIR) --mask $(CONTOUR_MASK_DIR) --dst $(CONTOUR_DST_DIR)
 
 glcm: fast_glcm.py
 	$(PYTHON) melt_plot_glcm.py --src $(GLCM_SRC_PATH) --dst $(GLCM_DST_DIR)
