@@ -24,8 +24,8 @@ CONTOUR_DST_DIR = $(RESULT_PATH)contour/
 MASK_SRC_DIR = $(DATA_PATH)recoat/
 MASK_DST_DIR = $(RESULT_PATH)mask/
 
-GLCM_SRC_PATH = $(DATA_PATH)ct-example/01.jpg
-GLCM_DST_DIR = $(RESULT_PATH)glcm/
+GLCM_SRC_PATH = $(DATA_PATH)ct-example/
+GLCM_XLSX = glcm.xlsx
 
 DICOM_SRC_DIR = $(DATA_PATH)ct-example/
 DICOM_DST_DIR = $(RESULT_PATH)dicom/

@@ -30,8 +30,8 @@ geometric:
 contour: geometric
 	$(PYTHON) melt_contour.py --src $(CONTOUR_SRC_DIR) --mask $(CONTOUR_MASK_DIR) --dst $(CONTOUR_DST_DIR)
 
-glcm: fast_glcm.py
-	$(PYTHON) melt_plot_glcm.py --src $(GLCM_SRC_PATH) --dst $(GLCM_DST_DIR)
+glcm:
+	$(PYTHON) melt_glcm.py --src $(GLCM_SRC_PATH) --xlsx $(GLCM_XLSX)
 
 computed_tomography:
 	$(PYTHON) melt_jpg2dicom.py --src $(DICOM_SRC_DIR) --dst $(DICOM_DST_DIR)
@@ -46,4 +46,4 @@ labelme2coco.py:
 	@echo "File labelme2coco.py was patched."
 
 distclean: clean
-	-@$(RM) labelme2coco.py fast_glcm.py
+	-@$(RM) labelme2coco.py

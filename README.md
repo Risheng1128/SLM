@@ -165,11 +165,11 @@ make contour
 ```
 
 #### Gray Level Co-occurrence Matrix (GLCM)
-Because the defects in image is difficult to identify, introducing the GLCM to enhance the feature of melting defects in image.
+Because the defects in image is difficult to identify, introducing the GLCM to compute the different features in image.
 
 Format:
 ```
-python3 melt_plot_glcm.py --src <source image path> --dst <destination image path>
+python3 melt_plot_glcm.py --src <source image path> --xlsx <xlsx filename>
 ```
 
 Also can use the following command
