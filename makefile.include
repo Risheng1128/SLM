@@ -1,31 +1,31 @@
-RESULT_PATH = ./Result/
-DATA_PATH = ./Data/
-MODEL_PATH = ./Model/
+RESULT_PATH = ./result/
+DATA_PATH = ./data/
+MODEL_PATH = ./model/
 
 # the path to get coco format files and train them
-COCO_SRC_DIR = $(DATA_PATH)Recoat/
-COCO_DST_DIR = $(RESULT_PATH)COCO/
-TRAIN_SRC_DIR = $(RESULT_PATH)COCO/
-TRAIN_DST_DIR = $(RESULT_PATH)Model/
+COCO_SRC_DIR = $(DATA_PATH)recoat/
+COCO_DST_DIR = $(RESULT_PATH)coco/
+TRAIN_SRC_DIR = $(RESULT_PATH)coco/
+TRAIN_DST_DIR = $(RESULT_PATH)model/
 
 # the path to load model and detect recoating defects
-DETECT_SRC_DIR = $(DATA_PATH)Recoat/
-DETECT_DST_DIR = $(RESULT_PATH)Detect/
+DETECT_SRC_DIR = $(DATA_PATH)recoat/
+DETECT_DST_DIR = $(RESULT_PATH)detect/
 DETECT_MODEL = $(MODEL_PATH)recoat.pth
 
 # the geometric transform files
-GEOMETIC_SRC_DIR = $(DATA_PATH)Melt/
-GEOMETIC_DST_DIR = $(RESULT_PATH)Melt_Geometric/
+GEOMETIC_SRC_DIR = $(DATA_PATH)melt/
+GEOMETIC_DST_DIR = $(RESULT_PATH)geometric/
 
 CONTOUR_SRC_DIR = $(GEOMETIC_DST_DIR)
-CONTOUR_MASK_DIR = $(DATA_PATH)Melt_Mask/
-CONTOUR_DST_DIR = $(RESULT_PATH)Contour/
+CONTOUR_MASK_DIR = $(DATA_PATH)mask/
+CONTOUR_DST_DIR = $(RESULT_PATH)contour/
 
-MASK_SRC_DIR = $(DATA_PATH)Recoat/
-MASK_DST_DIR = $(RESULT_PATH)Mask/
+MASK_SRC_DIR = $(DATA_PATH)recoat/
+MASK_DST_DIR = $(RESULT_PATH)mask/
 
-GLCM_SRC_PATH = $(DATA_PATH)CT-example/01.jpg
-GLCM_DST_DIR = $(RESULT_PATH)GLCM/
+GLCM_SRC_PATH = $(DATA_PATH)ct-example/01.jpg
+GLCM_DST_DIR = $(RESULT_PATH)glcm/
 
-DICOM_SRC_DIR = $(DATA_PATH)CT-example/
-DICOM_DST_DIR = $(RESULT_PATH)Dicom/
+DICOM_SRC_DIR = $(DATA_PATH)ct-example/
+DICOM_DST_DIR = $(RESULT_PATH)dicom/
