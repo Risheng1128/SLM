@@ -8,8 +8,12 @@ if __name__ == '__main__':
 	default_uid = pydicom.uid.generate_uid()
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--src', help = 'source path')
-	parser.add_argument('--dst', help = 'destination path')
+	parser.add_argument('--src',
+	                    default='./data/ct-example/',
+	                    help='source image path')
+	parser.add_argument('--dst',
+	                    default='./result/dicom/',
+	                    help='destination path')
 	args = parser.parse_args()
 
 	if not args.src:
@@ -34,4 +38,3 @@ if __name__ == '__main__':
 		ds.SeriesInstanceUID = default_uid
 		ds.save_as(output_file)
 		index += 1
-

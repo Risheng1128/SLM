@@ -55,9 +55,15 @@ def move_item_median(img, contour, median_width=2160, median_height=2160):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src', help = 'source path')
-    parser.add_argument("--mask", help = "mask path")
-    parser.add_argument('--dst', help = 'destination path')
+    parser.add_argument('--src',
+                        default='./result/geometric/',
+                        help='source image path')
+    parser.add_argument('--mask',
+                        default='./data/mask/',
+                        help='mask image path')
+    parser.add_argument('--dst',
+                        default='./result/contour/',
+                        help='destination path')
     args = parser.parse_args()
 
     if (not args.src) or (not args.mask) or (not args.dst):

@@ -36,8 +36,12 @@ def create_calibration_picture(src_path, dst_path):
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--src", help = "source path")
-	parser.add_argument("--dst", help = "destination path")
+	parser.add_argument('--src',
+	                    default='./data/melt/',
+			    help='source image path')
+	parser.add_argument('--dst',
+	                    default='./result/geometric/',
+	                    help='destination path')
 	args = parser.parse_args()
 
 	if not args.src:
@@ -46,7 +50,4 @@ if __name__ == "__main__":
 	if not os.path.exists(args.dst):
 		os.makedirs(args.dst)
 
-	print("Input dir = ", args.src)
-	print("Output dir = ", args.dst)
 	create_calibration_picture(args.src, args.dst)
-	print("Complete!")

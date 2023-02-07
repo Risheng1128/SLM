@@ -5,8 +5,12 @@ from recoat_trainer import Detector
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--src", help = "source path")
-    parser.add_argument("--dst", help = "destination path")
+    parser.add_argument('--src',
+                        default='./result/coco/',
+                        help='train data path')
+    parser.add_argument('--dst',
+                        default='./result/model/',
+                        help='destination path')
     args = parser.parse_args()
 
     # create output file

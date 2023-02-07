@@ -214,8 +214,12 @@ def store_data(sheet, feature, layer_num):
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--src', help = 'source image path')
-	parser.add_argument('--xlsx', help = 'xlsx filename')
+	parser.add_argument('--src',
+                        default='./data/ct-example/',
+                        help='source image path')
+	parser.add_argument('--xlsx',
+                        default='glcm.xlsx',
+                        help = 'xlsx filename')
 	args = parser.parse_args()
 
 	if not args.src:

@@ -16,10 +16,12 @@ def convert_to_mask(src_path='./data/recoat/', dst_path='./result/mask/'):
 
 if __name__ == "__main__":
    parser = argparse.ArgumentParser()
-   parser.add_argument("--src", default='./data/recoat/',
-                                help="source path")
-   parser.add_argument("--dst", default='./result/mask/',
-                                help="destination path")
+   parser.add_argument('--src',
+                       default='./data/recoat/',
+                       help='source image path')
+   parser.add_argument('--dst',
+                       default='./result/mask/',
+                       help='destination path')
    args = parser.parse_args()
 
    convert_to_mask(args.src, args.dst)

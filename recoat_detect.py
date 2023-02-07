@@ -8,9 +8,15 @@ from utils import progress_bar
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--src", help = "source path")
-    parser.add_argument("--dst", help = "destination path")
-    parser.add_argument("--model", help = "model path")
+    parser.add_argument('--src',
+                        default='./data/recoat/',
+                        help='source image path')
+    parser.add_argument('--dst',
+                        default='./result/detect/',
+                        help='destination path')
+    parser.add_argument('--model',
+                        default='./model/recoat.pth',
+                        help='model path')
     args = parser.parse_args()
 
     # create output file
