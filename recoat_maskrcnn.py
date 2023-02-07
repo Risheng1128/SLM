@@ -1,8 +1,7 @@
-from recoat_trainer import *
-
-import glob
-import torch
+import os
 import argparse
+
+from recoat_trainer import Detector
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

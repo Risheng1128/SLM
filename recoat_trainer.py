@@ -1,24 +1,18 @@
-from detectron2.utils.logger import setup_logger
+import os
+import cv2
+import numpy as np
 
-setup_logger()
-
-from detectron2.data import DatasetCatalog, MetadataCatalog
+from detectron2.data import MetadataCatalog
 from detectron2.utils.visualizer import Visualizer, ColorMode
 from detectron2.config import get_cfg
 from detectron2.engine import DefaultPredictor, DefaultTrainer
 from detectron2 import model_zoo
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
-
-import os
-import pickle
-import cv2
-import numpy as np
-
-from utils import *
+from utils import regist_dataset
 
 class Detector:
-    def __init__(self, src_path='./Data/Recoat/', dst_path='./Result/Detect/'):
+    def __init__(self, src_path='./data/recoat/', dst_path='./result/detect/'):
         self.cfg = get_cfg()
 
         # get configuration from model_zoo
@@ -66,7 +60,7 @@ class Detector:
         image = cv2.imread(imagePath)
 
         if not os.path.exists(saveFolder):
-                os.makedirs(saveFolder)
+            os.makedirs(saveFolder)
 
         self.cfg.MODEL.WEIGHTS = os.path.join(model)
         self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7
@@ -74,9 +68,9 @@ class Detector:
         predictions = predictor(image)
 
         viz = Visualizer(image[:, :, ::-1],
-                metadata=self.coco_test_metadata,
-                scale=0.8,
-                instance_mode=ColorMode.IMAGE_BW)
+                         metadata=self.coco_test_metadata,
+                         scale=0.8,
+                         instance_mode=ColorMode.IMAGE_BW)
         output = viz.draw_instance_predictions(predictions["instances"].to("cpu"))
 
         result = output.get_image()[:, :, ::-1]
@@ -95,10 +89,7 @@ class Detector:
         mask = outputs["instances"].to("cpu").get("pred_masks").numpy()
         binary_mask = np.zeros((mask.shape[1],mask.shape[2]))
         for i in range(mask.shape[0]):
-                binary_mask += mask[i]
+            binary_mask += mask[i]
 
         np.where(binary_mask > 0, 255, 0)
         cv2.imwrite(saveFolder + imagePath.split('/')[-1], binary_mask*255)
-
-    def Save_Prediction_Video(self, videoPath :str, saveFolder :str, model :str):
-        pass

@@ -1,7 +1,7 @@
 import os
 import argparse
 
-def convert_to_mask(src_path = "./Data/Example/", dst_path = "./Data/Mask/"):
+def convert_to_mask(src_path='./data/recoat/', dst_path='./result/mask/'):
    if not os.path.exists(dst_path):
       os.makedirs(dst_path)
 
@@ -16,12 +16,10 @@ def convert_to_mask(src_path = "./Data/Example/", dst_path = "./Data/Mask/"):
 
 if __name__ == "__main__":
    parser = argparse.ArgumentParser()
-   parser.add_argument("--src", help = "source path")
-   parser.add_argument("--dst", help = "destination path")
+   parser.add_argument("--src", default='./data/recoat/',
+                                help="source path")
+   parser.add_argument("--dst", default='./result/mask/',
+                                help="destination path")
    args = parser.parse_args()
 
-   if args.src and args.dst:
-      convert_to_mask(args.src, args.dst)
-   else:
-      convert_to_mask()
-   
+   convert_to_mask(args.src, args.dst)

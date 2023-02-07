@@ -5,7 +5,7 @@ PYTHON = python3
 
 # train model
 all: labelme2coco
-	$(PYTHON) recoat_main.py --src $(TRAIN_SRC_DIR) --dst $(TRAIN_DST_DIR)
+	$(PYTHON) recoat_maskrcnn.py --src $(TRAIN_SRC_DIR) --dst $(TRAIN_DST_DIR)
 
 labelme2coco: labelme2coco.py
 	$(PYTHON) labelme2coco.py $(COCO_SRC_DIR) $(COCO_DST_DIR) --labels ./labels.txt

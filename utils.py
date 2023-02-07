@@ -1,19 +1,9 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import random
-import cv2 as cv
 import glob
-import matplotlib.pyplot as plt
-import math
+import cv2
 import colorama
-import os
 
-from detectron2.data import DatasetCatalog, MetadataCatalog
-from detectron2.utils.visualizer import Visualizer, ColorMode
 from detectron2.data.datasets import register_coco_instances
-
-from detectron2.config import get_cfg
-from detectron2 import model_zoo
 
 def DICE_COEFFICIENT(im1, im2, empty_score=1.0):
     """
@@ -52,6 +42,17 @@ def DICE_COEFFICIENT(im1, im2, empty_score=1.0):
 
     return 2. * intersection.sum() / im_sum
 
+def regist_dataset(src_path):
+    ## Regist Dataset
+    register_coco_instances(name="Example", metadata={},
+                            json_file=src_path + "annotations.json",
+                            image_root=src_path)
+
+def progress_bar(progress, total, color=colorama.Fore.YELLOW):
+    percent = 100 * (progress / float(total))
+    bar = '█' * int(percent) + "-" * (100 - int(percent))
+    print(color + f"\r[ {bar} ] {percent:.2f}%", end="\r")
+
 def dice_folder(ground_truth, prediction):
     pred = glob.glob(prediction)
     dice = []
@@ -71,19 +72,7 @@ def dice_folder(ground_truth, prediction):
 
             # print(gt, DICE_COEFFICIENT(pred[1], GT[1]))
             dice.append(DICE_COEFFICIENT(pred[1], GT[1]))
-
         except:
             pass
 
     return sum(dice) / len(dice)
-
-def regist_dataset(src_path):
-    ## Regist Dataset
-    register_coco_instances(name="Example", metadata={},
-                            json_file=src_path + "annotations.json",
-                            image_root=src_path)
-
-def progress_bar(progress, total, color=colorama.Fore.YELLOW):
-    percent = 100 * (progress / float(total))
-    bar = '█' * int(percent) + "-" * (100 - int(percent))
-    print(color + f"\r[ {bar} ] {percent:.2f}%", end="\r")

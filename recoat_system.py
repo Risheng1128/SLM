@@ -1,12 +1,12 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QFileDialog
-from PyQt5.QtGui import QPixmap, QImage
-from recoat_trainer import *
-import cv2 as cv
 import time
 import imghdr
 import sys
 import os
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QApplication, QFileDialog
+from PyQt5.QtGui import QPixmap
+from recoat_trainer import Detector
 
 def open_file():
     path, _ = QFileDialog.getOpenFileName(None)
@@ -30,8 +30,8 @@ def open_dir():
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         # initial model parameter
-        self.output_path = 'Result/Detect/'
-        self.model_path = './Model/recoat.pth'
+        self.output_path = './result/detect/'
+        self.model_path = './model/recoat.pth'
         self.model = Detector(dst_path=self.output_path)
 
         MainWindow.setObjectName("MainWindow")

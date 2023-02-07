@@ -1,12 +1,13 @@
 import sys
 import vtk
+
 from PyQt5 import QtWidgets
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+
 """
 A minimal example of a DICOM viewer using VTK and Qt.
 Rasmus R. Paulsen. DTU Compute. 2022
 """
-
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, dicom_folder, parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)

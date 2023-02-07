@@ -33,11 +33,11 @@ wget -q https://raw.githubusercontent.com/wkentaro/labelme/main/examples/instanc
 The following is the different commands in recoating part.
 
 #### Train recoating model
-Use [recoat_main.py](recoat_main.py) to train Mask R-CNN model
+Use [recoat_mskrcnn.py](recoat_mskrcnn.py) to train Mask R-CNN model
 
 Format:
 ```
-python3 recoat_main.py --src <source image path> --dst <destination image path>
+python3 recoat_mskrcnn.py --src <source image path> --dst <destination image path>
 ```
 
 Also can use the following command

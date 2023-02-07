@@ -1,8 +1,10 @@
-from recoat_trainer import *
-import torch
+import os
 import glob
-import torchvision.models as models
 import argparse
+import colorama
+
+from recoat_trainer import Detector
+from utils import progress_bar
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

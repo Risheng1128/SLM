@@ -4,6 +4,7 @@ import argparse
 import glob
 import os
 import colorama
+
 from utils import progress_bar
 
 def rotate_img(img):
