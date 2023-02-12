@@ -1,9 +1,9 @@
 # SLM
-A research focusing on [selective lasermelting (SLM)](https://en.wikipedia.org/wiki/Selective_laser_melting).
+A research focusing on [selective laser melting (SLM)](https://en.wikipedia.org/wiki/Selective_laser_melting).
 
 The project is divided into two parts — recoating and melting.
 
-In recoating part, the project applies the [Mask R-CNN](https://github.com/matterport/Mask_RCNN) model with [detectron2](https://ai.facebook.com/tools/detectron2/) to detect the recoating defects. On the other hand, there are three types of recoating defects — powder uneven, powder_uncover and scratch. It can be found in [labels.txt](/data/recoat/labels.txt).
+In recoating part, the project applies the [Mask R-CNN](https://github.com/matterport/Mask_RCNN) model with [detectron2](https://ai.facebook.com/tools/detectron2/) to detect the recoating defects. On the other hand, there are three types of recoating defects — powder uneven, powder uncover and scratch. It can be found in [labels.txt](/data/recoat/labels.txt).
 
 In melting part, the research goal is using images to predict the material properties of workpieces. The project focus on the [permeability](https://en.wikipedia.org/wiki/Permeability_(electromagnetism)), [core loss](https://en.wikipedia.org/wiki/Magnetic_core#Core_loss) and [ultimate tensile strength](https://en.wikipedia.org/wiki/Ultimate_tensile_strength).
 
