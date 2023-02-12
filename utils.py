@@ -3,8 +3,6 @@ import glob
 import cv2
 import colorama
 
-from detectron2.data.datasets import register_coco_instances
-
 def DICE_COEFFICIENT(im1, im2, empty_score=1.0):
     """
     Computes the Dice coefficient, a measure of set similarity.
@@ -41,12 +39,6 @@ def DICE_COEFFICIENT(im1, im2, empty_score=1.0):
     intersection = np.logical_and(im1, im2)
 
     return 2. * intersection.sum() / im_sum
-
-def regist_dataset(src_path):
-    ## Regist Dataset
-    register_coco_instances(name="Example", metadata={},
-                            json_file=src_path + "annotations.json",
-                            image_root=src_path)
 
 def progress_bar(progress, total, color=colorama.Fore.YELLOW):
     percent = 100 * (progress / float(total))

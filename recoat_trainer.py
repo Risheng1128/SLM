@@ -9,7 +9,13 @@ from detectron2.engine import DefaultPredictor, DefaultTrainer
 from detectron2 import model_zoo
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
-from utils import regist_dataset
+from detectron2.data.datasets import register_coco_instances
+
+def regist_dataset(src_path):
+    ## Regist Dataset
+    register_coco_instances(name="Example", metadata={},
+                            json_file=src_path + "annotations.json",
+                            image_root=src_path)
 
 class Detector:
     def __init__(self, src_path='./data/recoat/', dst_path='./result/detect/'):
