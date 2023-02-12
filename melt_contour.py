@@ -29,10 +29,6 @@ def create_mask_image(mask_path):
     mask = mask[0:new_width, 0:new_height]
     return mask
 
-# crop the image
-def crop_image(img, x=1648, y=1648, width=1024, height=1024):
-    return img[y:y+height, x:x+width]
-
 # get the contours of image
 def get_contour(img):
     ret, binary = cv.threshold(img, 127, 255, cv.THRESH_BINARY)
@@ -41,17 +37,10 @@ def get_contour(img):
     contours, _ = cv.findContours(canny_img.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     return contours
 
-# move the item isolated from original image to the median of image
-# default image size = 4320 * 4320
-def move_item_median(img, contour, median_width=2160, median_height=2160):
-    # get the center of contour
-    M = cv.moments(contour)
-    c_width = int(M["m10"]/M["m00"])
-    c_height = int(M["m01"]/M["m00"])
-
-    M = np.float32([[1, 0, median_width - c_width], [0, 1, median_height - c_height]])
-    img = cv.warpAffine(img, M, (median_width * 2, median_height * 2))
-    return img
+# crop the image
+def crop_image(img, contour):
+    x, y, w, h = cv.boundingRect(contour)
+    return img[y:y+h, x:x+w]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -106,8 +95,7 @@ if __name__ == '__main__':
             # separate workpieces image
             mask = cv.bitwise_and(mask, cv.bitwise_not(mask_img))
             workpiece_img = cv.bitwise_and(origin_img, mask)
-            workpiece_img = move_item_median(workpiece_img, contours[c])
-            workpiece_img = crop_image(workpiece_img)
+            workpiece_img = crop_image(workpiece_img, contours[c])
 
             if i < 9:
                 cv.imwrite(output_path + 'layer_0' + str(i + 1) + '.jpg', workpiece_img)
