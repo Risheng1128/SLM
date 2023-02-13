@@ -24,7 +24,8 @@ if __name__ == '__main__':
         os.makedirs(args.dst)
 
     # load the parameters into the model
-    model = Detector(args.src, args.dst) # we do not specify pretrained=True, i.e. do not load default weights
+    # we do not specify pretrained=True, i.e. do not load default weights
+    model = Detector(args.src, args.dst)
 
     # test data
     image_path = args.src + "*.png"
@@ -36,7 +37,7 @@ if __name__ == '__main__':
         model.Save_Mask(image, args.dst, args.model)
         model.Save_Prediction(image, args.dst, args.model)
     print("\nDetect finished !")
-    
+
     # TODO: compute the dice and mAP
     # ground_truth = "./Data/Mask/Test/"
     # prediction = "./output/Test/mask/*.jpg"

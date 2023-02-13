@@ -49,7 +49,8 @@ class MainWindow(QtWidgets.QMainWindow):
         slice_text_prop.SetJustificationToLeft()
 
         self.slice_text_mapper = vtk.vtkTextMapper()
-        msg = f"{self.image_viewer.GetSlice()} / {self.image_viewer.GetSliceMax()}"
+        msg = f"{self.image_viewer.GetSlice()} / \
+                {self.image_viewer.GetSliceMax()}"
         self.slice_text_mapper.SetInput(msg)
         self.slice_text_mapper.SetInput(msg)
         self.slice_text_mapper.SetTextProperty(slice_text_prop)
@@ -73,7 +74,8 @@ class MainWindow(QtWidgets.QMainWindow):
             if cur_slice > self.image_viewer.GetSliceMin():
                 self.image_viewer.SetSlice(cur_slice - 1)
 
-        msg = f"{self.image_viewer.GetSlice()} / {self.image_viewer.GetSliceMax()}"
+        msg = f"{self.image_viewer.GetSlice()} / \
+                {self.image_viewer.GetSliceMax()}"
         self.slice_text_mapper.SetInput(msg)
         self.image_viewer.Render()
 
@@ -89,6 +91,7 @@ def run_qt_window():
     if folder is not None:
         window = MainWindow(folder[0])
         sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     run_qt_window()

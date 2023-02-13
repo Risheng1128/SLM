@@ -12,7 +12,9 @@ def convert_to_mask(src_path='./data/recoat/', dst_path='./result/mask/'):
             if os.path.isfile(src_path + item):
                 print("C: " + str(item))
                 dst = dst_path + str(item).split('.')[0]
-                os.system("labelme_json_to_dataset " + src_path + item + " -o " + dst)
+                os.system("labelme_json_to_dataset " +
+                          src_path + item + " -o " + dst)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

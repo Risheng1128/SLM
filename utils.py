@@ -3,6 +3,7 @@ import glob
 import cv2
 import colorama
 
+
 def DICE_COEFFICIENT(im1, im2, empty_score=1.0):
     """
     Computes the Dice coefficient, a measure of set similarity.
@@ -29,7 +30,8 @@ def DICE_COEFFICIENT(im1, im2, empty_score=1.0):
     im2 = np.asarray(im2).astype(np.bool)
 
     if im1.shape != im2.shape:
-        raise ValueError("Shape mismatch: im1 and im2 must have the same shape.")
+        raise ValueError(
+            "Shape mismatch: im1 and im2 must have the same shape.")
 
     im_sum = im1.sum() + im2.sum()
     if im_sum == 0:
@@ -40,10 +42,12 @@ def DICE_COEFFICIENT(im1, im2, empty_score=1.0):
 
     return 2. * intersection.sum() / im_sum
 
+
 def progress_bar(progress, total, color=colorama.Fore.YELLOW):
     percent = 100 * (progress / float(total))
     bar = '█' * int(percent) + "-" * (100 - int(percent))
     print(color + f"\r[ {bar} ] {percent:.2f}%", end="\r")
+
 
 def dice_folder(ground_truth, prediction):
     pred = glob.glob(prediction)

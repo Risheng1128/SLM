@@ -31,7 +31,8 @@ if __name__ == '__main__':
         # convert jpg to dicom
         os.system("img2dcm " + i + ' ' + output_file)
         # decompress dicom file
-        os.system('dicom-decompress --transcode ' + output_file + ' ' + output_file)
+        os.system('dicom-decompress --transcode ' +
+                  output_file + ' ' + output_file)
 
         # make the SeriesInstanceUID same
         ds = pydicom.dcmread(output_file)

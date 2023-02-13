@@ -117,7 +117,8 @@ class Ui_MainWindow(object):
         self.label.setText("鋪粉後瑕疵檢測系統")
         self.origin_label.setText("原始圖片")
         self.detection_label.setText("辨識後圖片")
-        self.defects_label.setText("瑕疵分類:\n0: 鋪粉不均勻\n1: 鋪粉未覆蓋\n2: 刮刀刮痕\n辨識時間(s):")
+        self.defects_label.setText(
+            "瑕疵分類:\n0: 鋪粉不均勻\n1: 鋪粉未覆蓋\n2: 刮刀刮痕\n辨識時間(s):")
         self.load_img_button.setText("讀取圖片")
         self.detect_img_button.setText("讀取圖片並辨識")
         self.load_dir_button.setText("選擇目錄")
@@ -126,7 +127,8 @@ class Ui_MainWindow(object):
         filepath = open_file()
         if not filepath:
             return
-        self.display_graphics_view(filepath, self.origin_window, self.origin_window_scene, 50)
+        self.display_graphics_view(
+            filepath, self.origin_window, self.origin_window_scene, 50)
 
     def click_detect_img_button(self):
         filepath = open_file()
@@ -150,13 +152,15 @@ class Ui_MainWindow(object):
 
     def display_origin_and_detect_img(self, filepath):
         print("dtetect file", filepath)
-        self.display_graphics_view(filepath, self.origin_window, self.origin_window_scene, 50)
+        self.display_graphics_view(
+            filepath, self.origin_window, self.origin_window_scene, 50)
         start = time.time()
         self.model.Save_Prediction(filepath, self.output_path, self.model_path)
         end = time.time()
         print("detection time: ", end - start, "s")
         self.time_label.setText(str(round(end - start, 3)))
-        self.display_graphics_view(self.output_path + filepath.split('/')[-1], self.detect_window, self.detect_window_scene, 800)
+        self.display_graphics_view(self.output_path + filepath.split('/')
+                                   [-1], self.detect_window, self.detect_window_scene, 800)
 
     def display_graphics_view(self, filename, view, scene, x_offset):
         img = QPixmap(filename)
@@ -171,6 +175,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])

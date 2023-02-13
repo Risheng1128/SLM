@@ -16,7 +16,8 @@ def geometric_transform(src_file, dst_file):
     pts1 = np.float32([[627.2307, 166.6923], [4161.8461, 185.9230],
                        [350.3076, 3616.6923], [4442.6153, 3620.5384]])
     # new picture points
-    pts2 = np.float32([[0, 0], [new_width, 0], [0, new_height], [new_width, new_height]])
+    pts2 = np.float32(
+        [[0, 0], [new_width, 0], [0, new_height], [new_width, new_height]])
 
     # Generate transform matrix
     M = cv.getPerspectiveTransform(pts1, pts2)
@@ -28,11 +29,12 @@ def geometric_transform(src_file, dst_file):
 def create_calibration_picture(src_path, dst_path):
     src_img = glob.glob(src_path + "*.jpg")
     total = len(src_img)
-	
+
     # generate pictures by geometric transform
     for i, image in enumerate(src_img):
         progress_bar(i, total - 1, color=colorama.Fore.YELLOW)
         geometric_transform(image, dst_path + image.split('/')[-1])
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

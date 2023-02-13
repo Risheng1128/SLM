@@ -21,11 +21,13 @@ def create_mask_image(mask_path):
 
     rows, cols = mask.shape[:2]
     mask = cv.resize(mask, (new_width, new_height))
-    mask = cv.resize(mask, None, fx=1.46, fy=1.48, interpolation=cv.INTER_LINEAR)
+    mask = cv.resize(mask, None, fx=1.46, fy=1.48,
+                     interpolation=cv.INTER_LINEAR)
 
     # shift image
     M = np.float32([[1, 0, 70], [0, 1, 200]])
-    mask = cv.warpAffine(mask, M, (new_width, new_height), borderValue=(255, 255, 255))
+    mask = cv.warpAffine(mask, M, (new_width, new_height),
+                         borderValue=(255, 255, 255))
     mask = mask[0:new_width, 0:new_height]
     return mask
 
@@ -34,13 +36,15 @@ def get_contour(img):
     ret, binary = cv.threshold(img, 127, 255, cv.THRESH_BINARY)
     blur_img = cv.GaussianBlur(binary, (3, 3), 0)
     canny_img = cv.Canny(blur_img, 80, 200)
-    contours, _ = cv.findContours(canny_img.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv.findContours(
+        canny_img.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     return contours
 
 # crop the image
 def crop_image(img, contour):
     x, y, w, h = cv.boundingRect(contour)
-    return img[y:y+h, x:x+w]
+    return img[y:y + h, x:x + w]
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -72,7 +76,7 @@ if __name__ == '__main__':
     for i in range(mask_num):
         progress_bar(i, mask_num - 1, color=colorama.Fore.YELLOW)
 
-        origin_img = cv.imread(origin_list[i], cv.COLOR_BGR2GRAY)        
+        origin_img = cv.imread(origin_list[i], cv.COLOR_BGR2GRAY)
         mask_img = create_mask_image(mask_list[i])
 
         # find all contours in mask (item number)
@@ -80,7 +84,7 @@ if __name__ == '__main__':
 
         # workpiece
         for c in range(len(contours)):
-            # eliminate contour that is too small 
+            # eliminate contour that is too small
             if cv.contourArea(contours[c]) < 20:
                 continue
 
@@ -98,6 +102,8 @@ if __name__ == '__main__':
             workpiece_img = crop_image(workpiece_img, contours[c])
 
             if i < 9:
-                cv.imwrite(output_path + 'layer_0' + str(i + 1) + '.jpg', workpiece_img)
+                cv.imwrite(output_path + 'layer_0' +
+                           str(i + 1) + '.jpg', workpiece_img)
             else:
-                cv.imwrite(output_path + 'layer_' + str(i + 1) + '.jpg', workpiece_img)
+                cv.imwrite(output_path + 'layer_' +
+                           str(i + 1) + '.jpg', workpiece_img)

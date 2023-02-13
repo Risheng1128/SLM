@@ -28,24 +28,25 @@ def get_glcm(img, vmin=0, vmax=255, levels=8, distance=1.0, angle=0.0):
     Grey-level co-occurrence matrix
     shape = (levels, levels)
     '''
-    h,w = img.shape
+    h, w = img.shape
     # digitize
-    bins = np.linspace(vmin, vmax+1, levels+1)
+    bins = np.linspace(vmin, vmax + 1, levels + 1)
     gl1 = np.digitize(img, bins) - 1
 
     # make shifted image
-    dx = distance*np.cos(np.deg2rad(angle))
-    dy = distance*np.sin(np.deg2rad(-angle))
-    mat = np.array([[1.0,0.0,-dx], [0.0,1.0,-dy]], dtype=np.float32)
-    gl2 = cv.warpAffine(gl1, mat, (w,h), flags=cv.INTER_NEAREST, borderMode=cv.BORDER_REPLICATE)
+    dx = distance * np.cos(np.deg2rad(angle))
+    dy = distance * np.sin(np.deg2rad(-angle))
+    mat = np.array([[1.0, 0.0, -dx], [0.0, 1.0, -dy]], dtype=np.float32)
+    gl2 = cv.warpAffine(gl1, mat, (w, h), flags=cv.INTER_NEAREST,
+                        borderMode=cv.BORDER_REPLICATE)
 
     # make glcm
     glcm = np.zeros((levels, levels), dtype=np.uint8)
 
     for i in range(levels):
         for j in range(levels):
-            mask = ((gl1==i) & (gl2==j))
-            glcm[i,j] = mask.sum()
+            mask = ((gl1 == i) & (gl2 == j))
+            glcm[i, j] = mask.sum()
     # normalize
     return glcm / glcm.sum()
 
@@ -57,8 +58,8 @@ def compute_mean(glcm):
 
     for i in range(row):
         for j in range(col):
-            mean_x += glcm[i,j] * i
-            mean_y += glcm[i,j] * j
+            mean_x += glcm[i, j] * i
+            mean_y += glcm[i, j] * j
     return mean_x, mean_y
 
 # compute variance feature
@@ -124,7 +125,8 @@ def compute_correlation(glcm, mean_x, mean_y, variance_x, variance_y):
 
     for i in range(row):
         for j in range(col):
-            correlation += glcm[i, j] * (i - mean_x) * (j - mean_y) / np.sqrt(variance_x * variance_y)
+            correlation += glcm[i, j] * (i - mean_x) * \
+                (j - mean_y) / np.sqrt(variance_x * variance_y)
     return correlation
 
 # compute dissimilarity feature
@@ -206,10 +208,11 @@ def store_data(sheet, feature, layer_num):
     sheet.cell(row, 8).value = feature["mean_y"]
     sheet.cell(row, 9).value = feature["variance_x"]
     sheet.cell(row, 10).value = feature["variance_y"]
-    sheet.cell(row, 11).value = feature["standard_deviation_x"]	
+    sheet.cell(row, 11).value = feature["standard_deviation_x"]
     sheet.cell(row, 12).value = feature["standard_deviation_y"]
     sheet.cell(row, 13).value = feature["correlation"]
     sheet.cell(row, 14).value = feature["dissimilarity"]
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -218,7 +221,7 @@ if __name__ == '__main__':
                         help='source image path')
     parser.add_argument('--xlsx',
                         default='glcm.xlsx',
-                        help = 'xlsx filename')
+                        help='xlsx filename')
     args = parser.parse_args()
 
     if not args.src:
@@ -231,7 +234,8 @@ if __name__ == '__main__':
 
     wb = openpyxl.Workbook()
     for i in range(item_num):
-        layer_list = list(enumerate(glob.glob(os.path.join(item_list[i], "*.jpg"))))
+        layer_list = list(
+            enumerate(glob.glob(os.path.join(item_list[i], "*.jpg"))))
         layer_list = sorted([i[1] for i in layer_list])
         layer_num = len(layer_list)
 
@@ -270,13 +274,15 @@ if __name__ == '__main__':
                 feature["variance_x"] += variance_x
                 feature["variance_y"] += variance_y
 
-                standard_deviation_x, standard_deviation_y = compute_standard_deviation(glcm, variance_x, variance_y)
+                standard_deviation_x, standard_deviation_y = \
+                    compute_standard_deviation(glcm, variance_x, variance_y)
                 feature["standard_deviation_x"] += standard_deviation_x
                 feature["standard_deviation_y"] += standard_deviation_y
 
                 feature["contrast"] += compute_contrast(glcm)
                 feature["autocorrelation"] += compute_autocorrelation(glcm)
-                feature["correlation"] += compute_correlation(glcm, mean_x, mean_y, variance_x, variance_y)
+                feature["correlation"] += compute_correlation(
+                    glcm, mean_x, mean_y, variance_x, variance_y)
                 feature["dissimilarity"] += compute_dissimilarity(glcm)
                 feature["energy"] += compute_energy(glcm)
                 feature["entropy"] += compute_entropy(glcm)
