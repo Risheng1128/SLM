@@ -78,7 +78,7 @@ class Ui_MainWindow(object):
         self.detection_label.setLayoutDirection(QtCore.Qt.LeftToRight)
 
         self.defects_label = QtWidgets.QLabel(self.centralwidget)
-        self.defects_label.setGeometry(QtCore.QRect(1525, 60, 250, 30*7))
+        self.defects_label.setGeometry(QtCore.QRect(1525, 60, 250, 30 * 7))
         self.defects_label.setFont(font)
         self.defects_label.setLayoutDirection(QtCore.Qt.LeftToRight)
 
@@ -160,7 +160,8 @@ class Ui_MainWindow(object):
         print("detection time: ", end - start, "s")
         self.time_label.setText(str(round(end - start, 3)))
         self.display_graphics_view(self.output_path + filepath.split('/')
-                                   [-1], self.detect_window, self.detect_window_scene, 800)
+                                   [-1], self.detect_window,
+                                   self.detect_window_scene, 800)
 
     def display_graphics_view(self, filename, view, scene, x_offset):
         img = QPixmap(filename)

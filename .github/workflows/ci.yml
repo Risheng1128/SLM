@@ -1,0 +1,21 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  recoating-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: recoating check
+      run: sh .github/workflows/recoating-check.sh
+  melting-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: melting check
+      run: sh .github/workflows/melting-check.sh
+  coding-style:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: check coding-style
+      run: sh .github/workflows/coding-style.sh

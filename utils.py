@@ -57,18 +57,14 @@ def dice_folder(ground_truth, prediction):
         gt = ground_truth + str(folder) + '/label.png'
         progress_bar(i, len(pred), color=colorama.Fore.YELLOW)
 
-        try:
-            GT = cv2.imread(gt)
-            GT = cv2.cvtColor(GT, cv2.COLOR_BGR2GRAY)
-            GT = cv2.threshold(GT, 1, 255, cv2.THRESH_BINARY)
+        GT = cv2.imread(gt)
+        GT = cv2.cvtColor(GT, cv2.COLOR_BGR2GRAY)
+        GT = cv2.threshold(GT, 1, 255, cv2.THRESH_BINARY)
 
-            pred = cv2.imread(image)
-            pred = cv2.cvtColor(pred, cv2.COLOR_BGR2GRAY)
-            pred = cv2.threshold(pred, 1, 255, cv2.THRESH_BINARY)
+        pred = cv2.imread(image)
+        pred = cv2.cvtColor(pred, cv2.COLOR_BGR2GRAY)
+        pred = cv2.threshold(pred, 1, 255, cv2.THRESH_BINARY)
 
-            # print(gt, DICE_COEFFICIENT(pred[1], GT[1]))
-            dice.append(DICE_COEFFICIENT(pred[1], GT[1]))
-        except:
-            pass
+        dice.append(DICE_COEFFICIENT(pred[1], GT[1]))
 
     return sum(dice) / len(dice)
