@@ -47,6 +47,11 @@ def get_glcm(img, vmin=0, vmax=255, levels=8, distance=1.0, angle=0.0):
         for j in range(levels):
             mask = ((gl1 == i) & (gl2 == j))
             glcm[i, j] = mask.sum()
+
+    # eliminate the affect of background
+    glcm[:, 0] = 0
+    glcm[0, :] = 0
+
     # normalize
     return glcm / glcm.sum()
 
