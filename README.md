@@ -50,6 +50,11 @@ make recoat_system
 ```
 
 ### Melting
+Download the used package:
+```
+pip3 install colorama opencv-python openpyxl
+```
+
 **Geometric Transform**: The following image is orignal SLM image and the project annotates it to get the four point in order to make use of geometric transform. The point can be found in [origin.json](data/geometric/origin.json)
 
 ![](data/geometric/origin.jpg)
@@ -70,6 +75,13 @@ make glcm
 ```
 
 **Computed Tomography (CT)**: Use computed tomography image make us observe workpiece quality more clearly. In this project, using file `melt_jpg2dicom.py` to convert the `.jpg` files to `.dcm` files which usually are applied in biomedical field. On the other hand, display the dicom image by file `melt_dicom_viewer.py` the reference to [QtVTKDICOMViewer](https://github.com/RasmusRPaulsen/QtVTKDICOMViewer).
+
+Before showing the CT images, download the necessary packages:
+```
+pip3 install vtk pydicom PyQt5
+```
+
+Show the CT image in dicom viewer:
 ```
 make computed_tomography
 ```
