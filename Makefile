@@ -37,6 +37,10 @@ computed_tomography:
 	$(PYTHON) melt_jpg2dicom.py --src $(DICOM_SRC_PATH) --dst $(DICOM_DST_PATH)
 	$(PYTHON) melt_dicom_viewer.py
 
+# train xgboost model
+train_xgboost:
+	$(PYTHON) melt_xgboost.py --dst $(XGBOOST_DST_PATH)
+
 clean:
 	-@$(RM) -r $(RESULT)
 

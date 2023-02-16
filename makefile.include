@@ -30,3 +30,5 @@ GLCM_XLSX = glcm.xlsx
 
 DICOM_SRC_PATH = $(DATA)/ct-example/item01/
 DICOM_DST_PATH = $(RESULT)/dicom/
+
+XGBOOST_DST_PATH = $(RESULT)/model/
