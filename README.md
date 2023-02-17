@@ -90,7 +90,7 @@ make computed_tomography
 
 Install the necessary packages:
 ```
-pip3 install xgboost pandas
+pip3 install xgboost pandas openpyxl
 pip install -U scikit-learn
 ```
 

@@ -1,6 +1,7 @@
 import xgboost as xgb
 import pandas as pd
 import numpy as np
+import openpyxl
 import argparse
 import pickle
 import os
@@ -37,8 +38,10 @@ def load_data(filepath, keys, header):
 
     return x_train, x_test, y_train, y_test
 
-def train_xgboost_model(x_train, x_test, y_train, y_test,
-                        x_shape, y_repeat, keys, output):
+def train_xgboost_model(x_train, x_test, y_train, y_test, x_shape,
+                        y_repeat, keys, output, xlsx):
+    wb = openpyxl.Workbook()
+
     for key in keys:
         # convert 3-D matrix to 2-D matrix
         x_train[key] = np.reshape(np.array(x_train[key]), x_shape)
@@ -49,21 +52,35 @@ def train_xgboost_model(x_train, x_test, y_train, y_test,
 
         model = xgb.XGBRegressor(
             n_estimators=100000, learning_rate=0.1, max_depth=20)
+        # train XGBoost model
         model.fit(x_train[key], y_train[key])
+        # save XGBoost model
         pickle.dump(model, open(output + key + '.pickle.dat', 'wb'))
-
+        # predict x_test via XGBoost model
         predict = model.predict(x_test[key])
-        print('---------------', key, '---------------')
+
+        # create new sheet
+        sheet = wb.create_sheet(key)
+        for i, header in zip(range(5), const.output_header):
+            sheet.cell(1, i + 1).value = header
+        # compute R2 score and MSE
+        sheet.cell(2, 4).value = model.score(x_test[key], y_test[key])
+        sheet.cell(2, 5).value = \
+            metrics.mean_squared_error(y_test[key], predict)
+
+        row = 2
         for pre, true in zip(predict, y_test[key]):
-            print('predict: ', pre, '\ttrue: ', true)
-        print('R2 Score: ', model.score(x_test[key], y_test[key]))
-        print('MSE score: ', metrics.mean_squared_error(y_test[key], predict))
+            sheet.cell(row, 1).value = pre
+            sheet.cell(row, 2).value = true
+            sheet.cell(row, 3).value = (abs(pre - true) / true) * 100
+            row += 1
+        wb.save(output + xlsx)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dst',
-                        default='./result/model/',
+                        default='./result/xgboost/',
                         help='destination path')
     args = parser.parse_args()
 
@@ -82,7 +99,8 @@ if __name__ == '__main__':
     # train tensile model
     train_xgboost_model(x_train, x_test, y_train, y_test,
                         x_shape=(-1, 70 * 13), y_repeat=1,
-                        keys=const.tensile_key, output=args.dst)
+                        keys=const.tensile_key, output=args.dst,
+                        xlsx='tensile.xlsx')
 
     x_train, x_test, y_train, y_test = load_data(ring_filepath,
                                                  const.magnetic_key +
@@ -92,8 +110,10 @@ if __name__ == '__main__':
     # train permeability model
     train_xgboost_model(x_train, x_test, y_train, y_test,
                         x_shape=(-1, 13), y_repeat=70,
-                        keys=const.magnetic_key, output=args.dst)
+                        keys=const.magnetic_key, output=args.dst,
+                        xlsx='magnetic.xlsx')
     # train iron loss model
     train_xgboost_model(x_train, x_test, y_train, y_test,
                         x_shape=(-1, 70 * 13), y_repeat=1,
-                        keys=const.iron_key, output=args.dst)
+                        keys=const.iron_key, output=args.dst,
+                        xlsx='iron.xlsx')
