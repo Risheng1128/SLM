@@ -1,3 +1,8 @@
+feature_header = ['energy', 'entropy', 'contrast', 'idm', 'autocorrelation',
+                  'mean_x', 'mean_y', 'variance_x', 'variance_y',
+                  'standard_deviation_x', 'standard_deviation_y',
+                  'correlation', 'dissimilarity']
+
 # excel header information
 layer_header = ['layer']
 tensile_header = ['拉伸強度']

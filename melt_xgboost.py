@@ -61,8 +61,9 @@ def train_xgboost_model(x_train, x_test, y_train, y_test, x_shape,
 
         # create new sheet
         sheet = wb.create_sheet(key)
-        for i, header in zip(range(5), const.output_header):
-            sheet.cell(1, i + 1).value = header
+        for col, header in zip(range(1, len(const.output_header) + 1),
+                               const.output_header):
+            sheet.cell(1, col).value = header
         # compute R2 score and MSE
         sheet.cell(2, 4).value = model.score(x_test[key], y_test[key])
         sheet.cell(2, 5).value = \

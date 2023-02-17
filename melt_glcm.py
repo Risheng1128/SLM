@@ -1,6 +1,7 @@
 import argparse
 import cv2 as cv
 import numpy as np
+import melt_constants as const
 import os
 import openpyxl
 import glob
@@ -186,37 +187,18 @@ def compute_idm(glcm):
     return idm
 
 def create_header(sheet):
-    sheet.cell(1, 1).value = 'layer'
-    sheet.cell(1, 2).value = 'energy'
-    sheet.cell(1, 3).value = 'entropy'
-    sheet.cell(1, 4).value = 'contrast'
-    sheet.cell(1, 5).value = 'idm'
-    sheet.cell(1, 6).value = 'autocorrelation'
-    sheet.cell(1, 7).value = 'mean_x'
-    sheet.cell(1, 8).value = 'mean_y'
-    sheet.cell(1, 9).value = 'variance_x'
-    sheet.cell(1, 10).value = 'variance_y'
-    sheet.cell(1, 11).value = 'standard_deviation_x'
-    sheet.cell(1, 12).value = 'standard_deviation_y'
-    sheet.cell(1, 13).value = 'correlation'
-    sheet.cell(1, 14).value = 'dissimilarity'
+    headers = const.layer_header + const.feature_header
+    for col, header in zip(range(1, len(headers) + 1), headers):
+        sheet.cell(1, col).value = header
 
 def store_data(sheet, feature, layer_num):
     row = layer_num + 2
-    sheet.cell(row, 1).value = 'layer' + str(layer_num)
-    sheet.cell(row, 2).value = feature["energy"]
-    sheet.cell(row, 3).value = feature["entropy"]
-    sheet.cell(row, 4).value = feature["contrast"]
-    sheet.cell(row, 5).value = feature["idm"]
-    sheet.cell(row, 6).value = feature["autocorrelation"]
-    sheet.cell(row, 7).value = feature["mean_x"]
-    sheet.cell(row, 8).value = feature["mean_y"]
-    sheet.cell(row, 9).value = feature["variance_x"]
-    sheet.cell(row, 10).value = feature["variance_y"]
-    sheet.cell(row, 11).value = feature["standard_deviation_x"]
-    sheet.cell(row, 12).value = feature["standard_deviation_y"]
-    sheet.cell(row, 13).value = feature["correlation"]
-    sheet.cell(row, 14).value = feature["dissimilarity"]
+    # store layer number
+    sheet.cell(row, 1).value = layer_num
+    # store layer data
+    for col, header in zip(range(2, len(const.feature_header) + 2),
+                           const.feature_header):
+        sheet.cell(row, col).value = feature[header]
 
 
 if __name__ == '__main__':
@@ -250,23 +232,7 @@ if __name__ == '__main__':
         for j in range(layer_num):
             img = cv.imread(layer_list[j])
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-
-            feature = {"autocorrelation": 0,
-                       "mean_x": 0,
-                       "mean_y": 0,
-                       "variance_x": 0,
-                       "variance_y": 0,
-                       "standard_deviation_x": 0,
-                       "standard_deviation_y": 0,
-                       "cluster_prominence": 0,
-                       "cluster_shade": 0,
-                       "cluster_tendency": 0,
-                       "contrast": 0,
-                       "correlation": 0,
-                       "dissimilarity": 0,
-                       "energy": 0,
-                       "entropy": 0,
-                       "idm": 0}
+            feature = {feature: 0 for feature in const.feature_header}
 
             for z in [0, 45, 90, 135]:
                 glcm = get_glcm(img, distance=1, angle=z, levels=8)
