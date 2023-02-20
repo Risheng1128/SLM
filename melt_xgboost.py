@@ -64,10 +64,14 @@ def train_xgboost_model(x_train, x_test, y_train, y_test, x_shape,
         for col, header in zip(range(1, len(const.output_header) + 1),
                                const.output_header):
             sheet.cell(1, col).value = header
-        # compute R2 score and MSE
-        sheet.cell(2, 4).value = model.score(x_test[key], y_test[key])
-        sheet.cell(2, 5).value = \
+        sheet.cell(2, 4).value = x_train[key].shape[0]
+        sheet.cell(2, 5).value = x_test[key].shape[0]
+        # compute R2 score, MSE and MAE
+        sheet.cell(2, 6).value = model.score(x_test[key], y_test[key])
+        sheet.cell(2, 7).value = \
             metrics.mean_squared_error(y_test[key], predict)
+        sheet.cell(2, 8).value = \
+            metrics.mean_absolute_error(y_test[key], predict)
 
         row = 2
         for pre, true in zip(predict, y_test[key]):
