@@ -108,14 +108,14 @@ if __name__ == '__main__':
                         xlsx='tensile.xlsx')
 
     x_train, x_test, y_train, y_test = load_data(ring_filepath,
-                                                 const.magnetic_key +
+                                                 const.pmb_key +
                                                  const.iron_key,
-                                                 const.magnetic_header +
+                                                 const.pmb_header +
                                                  const.iron_header)
     # train permeability model
     train_xgboost_model(x_train, x_test, y_train, y_test,
                         x_shape=(-1, 13), y_repeat=70,
-                        keys=const.magnetic_key, output=args.dst,
+                        keys=const.pmb_key, output=args.dst,
                         xlsx='magnetic.xlsx')
     # train iron loss model
     train_xgboost_model(x_train, x_test, y_train, y_test,
