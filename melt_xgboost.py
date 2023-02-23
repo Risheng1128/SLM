@@ -9,32 +9,37 @@ import melt_constants as const
 
 from sklearn import metrics
 
-# load data in excel
-def load_data(filepath, keys, header):
-    # default add 'layer' header
-    remove_header = const.layer_header + header
-
+# load workpiece and material property data from excel file
+def load_data(workpiece_filepath, property_filepath, keys):
     x_train = {key: [] for key in keys}
     x_test = {key: [] for key in keys}
     y_train = {key: [] for key in keys}
     y_test = {key: [] for key in keys}
 
-    for file in filepath:
-        sheets = pd.read_excel(file, sheet_name=None)
+    for wpf, ppf in zip(workpiece_filepath, property_filepath):
+        print('read workpiece file: ', wpf)
+        print('read material property file: ', ppf)
+        wp_sheets = pd.read_excel(wpf, sheet_name=None)
 
-        for sheet in sheets:
-            all_data = pd.read_excel(file, sheet_name=sheet)
+        for key in keys:
+            # the dictionary key must same in property excel
+            pp_data = pd.read_excel(ppf, sheet_name=key)
+            pp_data = np.array(pp_data.drop(const.trail_header, axis=1))
+            # switch 2D array to 1D array
+            pp_data = np.reshape(pp_data, -1)
 
-            for attr, key in zip(header, keys):
-                if all_data[attr][0] == const.error_data:
+            for index, sheet in zip(range(len(pp_data)), wp_sheets):
+                wp_data = pd.read_excel(wpf, sheet_name=sheet)
+                if pp_data[index] == const.error_data:
                     continue
 
                 if sheet[-1] == '5' or sheet[-1] == '6':
-                    x_test[key].append(all_data.drop(remove_header, axis=1))
-                    y_test[key].append(all_data[attr][0])
+                    x_test[key].append(wp_data.drop(const.layer_header, axis=1))
+                    y_test[key].append(pp_data[index])
                 else:
-                    x_train[key].append(all_data.drop(remove_header, axis=1))
-                    y_train[key].append(all_data[attr][0])
+                    x_train[key].append(wp_data.drop(
+                        const.layer_header, axis=1))
+                    y_train[key].append(pp_data[index])
 
     return x_train, x_test, y_train, y_test
 
@@ -47,8 +52,8 @@ def train_xgboost_model(x_train, x_test, y_train, y_test, x_shape,
         x_train[key] = np.reshape(np.array(x_train[key]), x_shape)
         x_test[key] = np.reshape(np.array(x_test[key]), x_shape)
 
-        y_train[key] = np.repeat(np.array(y_train[key]), y_repeat)
-        y_test[key] = np.repeat(np.array(y_test[key]), y_repeat)
+        y_train[key] = np.repeat(y_train[key], y_repeat)
+        y_test[key] = np.repeat(y_test[key], y_repeat)
 
         model = xgb.XGBRegressor(
             n_estimators=100000, learning_rate=0.1, max_depth=20)
@@ -95,12 +100,19 @@ if __name__ == '__main__':
     bone_filepath = ['./data/glcm-data/第一批狗骨頭.xlsx',
                      './data/glcm-data/第二批狗骨頭.xlsx']
 
+    bone_property_filepath = ['./data/glcm-data/第一批狗骨頭材料特性.xlsx',
+                              './data/glcm-data/第二批狗骨頭材料特性.xlsx']
+
     ring_filepath = ['./data/glcm-data/第一批圓環.xlsx',
                      './data/glcm-data/第二批圓環.xlsx']
 
+    ring_property_filepath = ['./data/glcm-data/第一批圓環材料特性.xlsx',
+                              './data/glcm-data/第二批圓環材料特性.xlsx']
+
     x_train, x_test, y_train, y_test = load_data(bone_filepath,
-                                                 const.tensile_key,
-                                                 const.tensile_header)
+                                                 bone_property_filepath,
+                                                 const.tensile_key)
+
     # train tensile model
     train_xgboost_model(x_train, x_test, y_train, y_test,
                         x_shape=(-1, 70 * 13), y_repeat=1,
@@ -108,10 +120,9 @@ if __name__ == '__main__':
                         xlsx='tensile.xlsx')
 
     x_train, x_test, y_train, y_test = load_data(ring_filepath,
+                                                 ring_property_filepath,
                                                  const.pmb_key +
-                                                 const.iron_key,
-                                                 const.pmb_header +
-                                                 const.iron_header)
+                                                 const.iron_key)
     # train permeability model
     train_xgboost_model(x_train, x_test, y_train, y_test,
                         x_shape=(-1, 13), y_repeat=70,
