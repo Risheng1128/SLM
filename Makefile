@@ -19,7 +19,7 @@ detect:
 	$(PYTHON) recoat_detect.py --src $(DETECT_SRC_PATH) --dst $(DETECT_DST_PATH) --model $(DETECT_MODEL)
 
 # open recoat detecting system
-recoat_system:
+recoat-system:
 	$(PYTHON) recoat_system.py
 
 # do geometric transform
@@ -33,12 +33,12 @@ contour: geometric
 glcm:
 	$(PYTHON) melt_glcm.py --src $(GLCM_SRC_PATH) --xlsx $(GLCM_XLSX)
 
-computed_tomography:
+computed-tomography:
 	$(PYTHON) melt_jpg2dicom.py --src $(DICOM_SRC_PATH) --dst $(DICOM_DST_PATH)
 	$(PYTHON) melt_dicom_viewer.py
 
 # train xgboost model
-train_xgboost:
+train-xgboost:
 	$(PYTHON) melt_xgboost.py --dst $(XGBOOST_DST_PATH)
 
 clean:
