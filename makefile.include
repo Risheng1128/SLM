@@ -3,32 +3,32 @@ DATA = ./data
 MODEL = ./model
 
 # the path to get coco format files and train them
-COCO_SRC_PATH = $(DATA)/recoat/
-COCO_DST_PATH = $(RESULT)/coco/
-LABEL_PATH = $(DATA)/recoat/labels.txt
-TRAIN_SRC_PATH = $(RESULT)/coco/
-TRAIN_DST_PATH = $(RESULT)/model/
+export COCO_SRC_PATH ?= $(DATA)/recoat/
+export COCO_DST_PATH ?= $(RESULT)/coco/
+export LABEL_PATH ?= $(DATA)/recoat/labels.txt
+export TRAIN_SRC_PATH ?= $(RESULT)/coco/
+export TRAIN_DST_PATH ?= $(RESULT)/model/
 
 # the path to load model and detect recoating defects
-DETECT_SRC_PATH = $(RECOAT)/
-DETECT_DST_PATH = $(RESULT)/detect/
-DETECT_MODEL = $(MODEL)/recoat.pth
+export DETECT_SRC_PATH ?= $(RECOAT)/
+export DETECT_DST_PATH ?= $(RESULT)/detect/
+export DETECT_MODEL ?= $(MODEL)/recoat.pth
 
 # the geometric transform files
-GEOMETRIC_SRC_PATH = $(DATA)/melt/
-GEOMETRIC_DST_PATH = $(RESULT)/geometric/
+export GEOMETRIC_SRC_PATH ?= $(DATA)/melt/
+export GEOMETRIC_DST_PATH ?= $(RESULT)/geometric/
 
-CONTOUR_SRC_PATH = $(GEOMETRIC_DST_PATH)
-CONTOUR_MASK_PATH = $(DATA)/mask/
-CONTOUR_DST_PATH = $(RESULT)/contour/
+export CONTOUR_SRC_PATH ?= $(GEOMETRIC_DST_PATH)
+export CONTOUR_MASK_PATH ?= $(DATA)/mask/
+export CONTOUR_DST_PATH ?= $(RESULT)/contour/
 
-MASK_SRC_PATH = $(DATA)/recoat/
-MASK_DST_PATH = $(RESULT)/mask/
+export MASK_SRC_PATH ?= $(DATA)/recoat/
+export MASK_DST_PATH ?= $(RESULT)/mask/
 
-GLCM_SRC_PATH = $(DATA)/ct-example/
-GLCM_XLSX = glcm.xlsx
+export GLCM_SRC_PATH ?= $(DATA)/ct-example/
+export GLCM_XLSX ?= glcm.xlsx
 
-DICOM_SRC_PATH = $(DATA)/ct-example/item01/
-DICOM_DST_PATH = $(RESULT)/dicom/
+export DICOM_SRC_PATH ?= $(DATA)/ct-example/item01/
+export DICOM_DST_PATH ?= $(RESULT)/dicom/
 
-XGBOOST_DST_PATH = $(RESULT)/xgboost/
+export XGBOOST_DST_PATH ?= $(RESULT)/xgboost/
