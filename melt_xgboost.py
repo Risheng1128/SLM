@@ -10,11 +10,12 @@ import melt_constants as const
 from sklearn import metrics
 
 # load workpiece and material property data from excel file
-def load_data(workpiece_filepath, property_filepath, keys):
+def load_data(workpiece_filepath, property_filepath, keys, header=[]):
     x_train = {key: [] for key in keys}
     x_test = {key: [] for key in keys}
     y_train = {key: [] for key in keys}
     y_test = {key: [] for key in keys}
+    remove_header = const.layer_header + header
 
     for wpf, ppf in zip(workpiece_filepath, property_filepath):
         print('read workpiece file: ', wpf)
@@ -34,11 +35,10 @@ def load_data(workpiece_filepath, property_filepath, keys):
                     continue
 
                 if sheet[-1] == '5' or sheet[-1] == '6':
-                    x_test[key].append(wp_data.drop(const.layer_header, axis=1))
+                    x_test[key].append(wp_data.drop(remove_header, axis=1))
                     y_test[key].append(pp_data[index])
                 else:
-                    x_train[key].append(wp_data.drop(
-                        const.layer_header, axis=1))
+                    x_train[key].append(wp_data.drop(remove_header, axis=1))
                     y_train[key].append(pp_data[index])
 
     return x_train, x_test, y_train, y_test
