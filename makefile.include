@@ -31,4 +31,4 @@ export GLCM_XLSX ?= glcm.xlsx
 export DICOM_SRC_PATH ?= $(DATA)/ct-example/item01/
 export DICOM_DST_PATH ?= $(RESULT)/dicom/
 
-export XGBOOST_DST_PATH ?= $(RESULT)/xgboost/
+export BOOST_DST_PATH ?= $(RESULT)/melt-model/

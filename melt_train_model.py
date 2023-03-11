@@ -1,4 +1,5 @@
 import xgboost as xgb
+import lightgbm as gbm
 import pandas as pd
 import numpy as np
 import openpyxl
@@ -43,17 +44,43 @@ def load_data(workpiece_filepath, property_filepath, keys, header=[]):
 
     return x_train, x_test, y_train, y_test
 
+def store_data(sheet, x_train, x_test, y_test, model, predict):
+    for col, header in zip(range(1, len(const.output_header) + 1),
+                           const.output_header):
+        sheet.cell(1, col).value = header
+    sheet.cell(2, 4).value = x_train.shape[0]
+    sheet.cell(2, 5).value = x_test.shape[0]
+    # compute R2 score, MSE and MAE
+    sheet.cell(2, 6).value = model.score(x_test, y_test)
+    sheet.cell(2, 7).value = \
+        metrics.mean_squared_error(y_test, predict)
+    sheet.cell(2, 8).value = \
+        metrics.mean_absolute_error(y_test, predict)
+
+    row = 2
+    for pre, true in zip(predict, y_test):
+        sheet.cell(row, 1).value = pre
+        sheet.cell(row, 2).value = true
+        sheet.cell(row, 3).value = (abs(pre - true) / true) * 100
+        row += 1
+
+# data preprocessing to train and test data
+def data_preprocessing(x_train, x_test, y_train, y_test, x_shape, y_repeat):
+    # convert 3-D matrix to 2-D matrix
+    x_train = np.reshape(np.array(x_train), x_shape)
+    x_test = np.reshape(np.array(x_test), x_shape)
+    y_train = np.repeat(y_train, y_repeat)
+    y_test = np.repeat(y_test, y_repeat)
+    return x_train, x_test, y_train, y_test
+
 def train_xgboost_model(x_train, x_test, y_train, y_test, x_shape,
                         y_repeat, keys, output, xlsx):
     wb = openpyxl.Workbook()
 
     for key in keys:
-        # convert 3-D matrix to 2-D matrix
-        x_train[key] = np.reshape(np.array(x_train[key]), x_shape)
-        x_test[key] = np.reshape(np.array(x_test[key]), x_shape)
-
-        y_train[key] = np.repeat(y_train[key], y_repeat)
-        y_test[key] = np.repeat(y_test[key], y_repeat)
+        x_train[key], x_test[key], y_train[key], y_test[key] = \
+            data_preprocessing(x_train[key], x_test[key], y_train[key],
+                               y_test[key], x_shape, y_repeat)
 
         model = xgb.XGBRegressor(
             n_estimators=100000, learning_rate=0.1, max_depth=20)
@@ -66,24 +93,36 @@ def train_xgboost_model(x_train, x_test, y_train, y_test, x_shape,
 
         # create new sheet
         sheet = wb.create_sheet(key)
-        for col, header in zip(range(1, len(const.output_header) + 1),
-                               const.output_header):
-            sheet.cell(1, col).value = header
-        sheet.cell(2, 4).value = x_train[key].shape[0]
-        sheet.cell(2, 5).value = x_test[key].shape[0]
-        # compute R2 score, MSE and MAE
-        sheet.cell(2, 6).value = model.score(x_test[key], y_test[key])
-        sheet.cell(2, 7).value = \
-            metrics.mean_squared_error(y_test[key], predict)
-        sheet.cell(2, 8).value = \
-            metrics.mean_absolute_error(y_test[key], predict)
+        # store data into excel
+        store_data(sheet, x_train[key], x_test[key],
+                   y_test[key], model, predict)
+        # save the excel
+        wb.save(output + xlsx)
 
-        row = 2
-        for pre, true in zip(predict, y_test[key]):
-            sheet.cell(row, 1).value = pre
-            sheet.cell(row, 2).value = true
-            sheet.cell(row, 3).value = (abs(pre - true) / true) * 100
-            row += 1
+def train_lightgbm_model(x_train, x_test, y_train, y_test, x_shape,
+                         y_repeat, keys, output, xlsx):
+    wb = openpyxl.Workbook()
+
+    for key in keys:
+        x_train[key], x_test[key], y_train[key], y_test[key] = \
+            data_preprocessing(x_train[key], x_test[key], y_train[key],
+                               y_test[key], x_shape, y_repeat)
+
+        model = gbm.LGBMRegressor(boosting_type='gbdt', num_leaves=10000,
+                                  learning_rate=0.3, max_depth=6)
+        # train XGBoost model
+        model.fit(x_train[key], y_train[key])
+        # save XGBoost model
+        pickle.dump(model, open(output + key + '.pickle.dat', 'wb'))
+        # predict x_test via XGBoost model
+        predict = model.predict(x_test[key])
+
+        # create new sheet
+        sheet = wb.create_sheet(key)
+        # store data into excel
+        store_data(sheet, x_train[key], x_test[key],
+                   y_test[key], model, predict)
+        # save the excel
         wb.save(output + xlsx)
 
 
@@ -127,7 +166,7 @@ if __name__ == '__main__':
     train_xgboost_model(x_train, x_test, y_train, y_test,
                         x_shape=(-1, 13), y_repeat=70,
                         keys=const.pmb_key, output=args.dst,
-                        xlsx='magnetic.xlsx')
+                        xlsx='permeability.xlsx')
     # train iron loss model
     train_xgboost_model(x_train, x_test, y_train, y_test,
                         x_shape=(-1, 70 * 13), y_repeat=1,
