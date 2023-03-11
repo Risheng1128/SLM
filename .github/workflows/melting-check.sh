@@ -6,6 +6,6 @@ pip3 install colorama opencv-python openpyxl
 set -x
 
 # isolate workpieces in image
-make contour
+make find-contour
 # glcm
-make glcm
+make gen-glcm

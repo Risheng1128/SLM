@@ -23,7 +23,7 @@ pip install labelme
 
 **Train Mask R-CNN model**: Use [recoat_mskrcnn.py](recoat_mskrcnn.py) to train Mask R-CNN model.
 ```
-make
+make train-mask-rcnn
 ```
 
 **Convert image to [coco dataset](https://cocodataset.org)**: Use labelme2coco.py in [labelme](https://github.com/wkentaro/labelme) project to convert label file to COCO dataset.
@@ -33,12 +33,12 @@ make labelme2coco
 
 **Convert [ground truth](https://en.wikipedia.org/wiki/Ground_truth) mask**: Use [recoat_json2mask.py](recoat_json2mask.py) to generate mask file. The `.json` file will be generated to mask, and we will use the `label.png` to compute dice coefficient.
 ```
-make mask
+make gen-mask
 ```
 
 **Load model and detect image**: Use [recoat_detect.py](recoat_detect.py) to load recoating model and detect the images. By default, it uses the `recoat.pth` in folder `model`.
 ```
-make detect
+make detect-defects
 ```
 
 **Recoat detecting system**: Use [recoat_system.py](recoat_system.py) to open the recoat detecting system. Before open the system, installing the pyqt5:
@@ -61,17 +61,17 @@ pip3 install colorama opencv-python openpyxl
 
 Use [melt_geometric.py](melt_geometric.py) to generate orthographic projection image.
 ```
-make geometric
+make geometric-transform
 ```
 
 **Isolate workpieces in image**: To have a better analysis for every workpieces, need to isolate them from image. Therefore, using [melt_contour.py](melt_contour.py) to isolate workpiece from image by using mask image (*.bmp).
 ```
-make contour
+make find-contours
 ```
 
 **Gray Level Co-occurrence Matrix (GLCM)**: Because the defects in image is difficult to identify, introducing the GLCM to compute the different features in image.
 ```
-make glcm
+make gen-glcm
 ```
 
 **Computed Tomography (CT)**: Use computed tomography image make us observe workpiece quality more clearly. In this project, using file `melt_jpg2dicom.py` to convert the `.jpg` files to `.dcm` files which usually are applied in biomedical field. On the other hand, display the dicom image by file `melt_dicom_viewer.py` the reference to [QtVTKDICOMViewer](https://github.com/RasmusRPaulsen/QtVTKDICOMViewer).
@@ -83,7 +83,7 @@ pip3 install vtk pydicom PyQt5
 
 Show the CT image in dicom viewer:
 ```
-make computed_tomography
+make computed-tomography
 ```
 
 **XGBoost Model and lightGBM**: Use [XGBoost](https://github.com/dmlc/xgboost) or [lightGBM](https://github.com/microsoft/LightGBM) to predict the material property include [permeability](https://en.wikipedia.org/wiki/Permeability_(electromagnetism)), [core loss](https://en.wikipedia.org/wiki/Magnetic_core#Core_loss) and [ultimate tensile strength](https://en.wikipedia.org/wiki/Ultimate_tensile_strength) via data generated from [GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix#Other_applications). The GLCM data can be found in folder `/data/glcm-data/`.
@@ -94,9 +94,9 @@ pip3 install xgboost lightgbm pandas openpyxl
 pip install -U scikit-learn
 ```
 
-Train the XGBoost model:
+Train the XGBoost or lightGBM model:
 ```
-make train_xgboost
+make train-boost-model
 ```
 
 ## Reference

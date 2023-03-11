@@ -8,6 +8,6 @@ pip3 install opencv-python colorama imgviz labelme pycocotools
 set -x
 
 # train Mask R-CNN model
-make
+make train-mask-rcnn
 # convert ground truth mask
-make mask
+make gen-mask

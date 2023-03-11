@@ -4,35 +4,37 @@
 PYTHON = python3
 
 # train model
-all: labelme2coco
-	$(PYTHON) recoat_maskrcnn.py --src $(TRAIN_SRC_PATH) --dst $(TRAIN_DST_PATH)
+train-mask-rcnn: labelme2coco
+	$(PYTHON) recoat_maskrcnn.py --src $(RCNN_SRC_PATH) --dst $(RCNN_DST_PATH)
 
 labelme2coco: labelme2coco.py
 	$(PYTHON) labelme2coco.py $(COCO_SRC_PATH) $(COCO_DST_PATH) --labels $(LABEL_PATH)
 
 # generate mask image
-mask:
+gen-mask:
 	$(PYTHON) recoat_json2mask.py --src $(MASK_SRC_PATH) --dst $(MASK_DST_PATH)
 
 # load recoating model and detect images
-detect:
+detect-defects:
 	$(PYTHON) recoat_detect.py --src $(DETECT_SRC_PATH) --dst $(DETECT_DST_PATH) --model $(DETECT_MODEL)
 
-# open recoat detecting system
+# open recoat defects detecting system
 recoat-system:
 	$(PYTHON) recoat_system.py
 
 # do geometric transform
-geometric:
+geometric-transform:
 	$(PYTHON) melt_geometric.py --src $(GEOMETRIC_SRC_PATH) --dst $(GEOMETRIC_DST_PATH)
 
 # isolate every workpieces in image
-contour: geometric
+find-contours: geometric
 	$(PYTHON) melt_contour.py --src $(CONTOUR_SRC_PATH) --mask $(CONTOUR_MASK_PATH) --dst $(CONTOUR_DST_PATH)
 
-glcm:
+# generate glcm feature from the workpiece images
+gen-glcm:
 	$(PYTHON) melt_glcm.py --src $(GLCM_SRC_PATH) --xlsx $(GLCM_XLSX)
 
+# view computed tomography via dicom view
 computed-tomography:
 	$(PYTHON) melt_jpg2dicom.py --src $(DICOM_SRC_PATH) --dst $(DICOM_DST_PATH)
 	$(PYTHON) melt_dicom_viewer.py

@@ -6,8 +6,8 @@ MODEL = ./model
 export COCO_SRC_PATH ?= $(DATA)/recoat/
 export COCO_DST_PATH ?= $(RESULT)/coco/
 export LABEL_PATH ?= $(DATA)/recoat/labels.txt
-export TRAIN_SRC_PATH ?= $(RESULT)/coco/
-export TRAIN_DST_PATH ?= $(RESULT)/model/
+export RCNN_SRC_PATH ?= $(RESULT)/coco/
+export RCNN_DST_PATH ?= $(RESULT)/model/
 
 # the path to load model and detect recoating defects
 export DETECT_SRC_PATH ?= $(RECOAT)/
