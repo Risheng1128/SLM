@@ -110,11 +110,11 @@ def train_lightgbm_model(x_train, x_test, y_train, y_test, x_shape,
 
         model = gbm.LGBMRegressor(boosting_type='gbdt', num_leaves=10000,
                                   learning_rate=0.3, max_depth=6)
-        # train XGBoost model
+        # train lightGBM model
         model.fit(x_train[key], y_train[key])
-        # save XGBoost model
+        # save lightGBM model
         pickle.dump(model, open(output + key + '.pickle.dat', 'wb'))
-        # predict x_test via XGBoost model
+        # predict x_test via lightGBM model
         predict = model.predict(x_test[key])
 
         # create new sheet
