@@ -66,24 +66,46 @@ def store_data(sheet, x_train, x_test, y_test, model, predict):
 
 # data preprocessing to train and test data
 def data_preprocessing(x_train, x_test, y_train, y_test, x_shape, y_repeat):
-    # convert 3-D matrix to 2-D matrix
-    x_train = np.reshape(np.array(x_train), x_shape)
-    x_test = np.reshape(np.array(x_test), x_shape)
-    y_train = np.repeat(y_train, y_repeat)
-    y_test = np.repeat(y_test, y_repeat)
+    for key in x_train.keys():
+        # convert 3-D matrix to 2-D matrix
+        x_train[key] = np.reshape(np.array(x_train[key]), x_shape)
+        x_test[key] = np.reshape(np.array(x_test[key]), x_shape)
+        y_train[key] = np.repeat(y_train[key], y_repeat)
+        y_test[key] = np.repeat(y_test[key], y_repeat)
     return x_train, x_test, y_train, y_test
 
-def train_xgboost_model(x_train, x_test, y_train, y_test, x_shape,
-                        y_repeat, keys, output, xlsx):
+# display the correlation coefficient
+def print_corrcoef(x_train, x_test, y_train, y_test):
+    for key in x_train.keys():
+        x = np.vstack((x_train[key], x_test[key]))
+        y = np.concatenate((y_train[key], y_test[key]))
+        x_mean = np.mean(x, axis=0)
+        y_mean = np.mean(y)
+
+        numerator = np.zeros(shape=x_mean.shape[0])
+        denominator1 = np.zeros(shape=x_mean.shape[0])
+        denominator2 = np.zeros(shape=x_mean.shape[0])
+
+        # compute correlation coefficient
+        for xi, yi in zip(x, y):
+            x_tmp = xi - x_mean
+            y_tmp = yi - y_mean
+            numerator += x_tmp * y_tmp
+            denominator1 += x_tmp ** 2
+            denominator2 += y_tmp ** 2
+
+        r = numerator / (np.sqrt(denominator1) * np.sqrt(denominator2))
+        print('----------', key, '----------')
+        for feature, i in zip(const.feature_header, r):
+            print(feature, ': ', i)
+
+def train_xgboost_model(x_train, x_test, y_train, y_test,
+                        keys, output, xlsx):
     wb = openpyxl.Workbook()
 
     for key in keys:
-        x_train[key], x_test[key], y_train[key], y_test[key] = \
-            data_preprocessing(x_train[key], x_test[key], y_train[key],
-                               y_test[key], x_shape, y_repeat)
-
         model = xgb.XGBRegressor(
-            n_estimators=100000, learning_rate=0.1, max_depth=20)
+            n_estimators=10000, learning_rate=0.3, max_depth=5)
         # train XGBoost model
         model.fit(x_train[key], y_train[key])
         # save XGBoost model
@@ -99,15 +121,11 @@ def train_xgboost_model(x_train, x_test, y_train, y_test, x_shape,
         # save the excel
         wb.save(output + xlsx)
 
-def train_lightgbm_model(x_train, x_test, y_train, y_test, x_shape,
-                         y_repeat, keys, output, xlsx):
+def train_lightgbm_model(x_train, x_test, y_train, y_test,
+                         keys, output, xlsx):
     wb = openpyxl.Workbook()
 
     for key in keys:
-        x_train[key], x_test[key], y_train[key], y_test[key] = \
-            data_preprocessing(x_train[key], x_test[key], y_train[key],
-                               y_test[key], x_shape, y_repeat)
-
         model = gbm.LGBMRegressor(boosting_type='gbdt', num_leaves=10000,
                                   learning_rate=0.3, max_depth=6)
         # train lightGBM model
@@ -148,27 +166,41 @@ if __name__ == '__main__':
     ring_property_filepath = ['./data/glcm-data/第一批圓環材料特性.xlsx',
                               './data/glcm-data/第二批圓環材料特性.xlsx']
 
+    # load tensile data
     x_train, x_test, y_train, y_test = load_data(bone_filepath,
                                                  bone_property_filepath,
                                                  const.tensile_key)
-
+    # data preprocessing
+    x_train, x_test, y_train, y_test = \
+        data_preprocessing(x_train, x_test, y_train, y_test,
+                           x_shape=(-1, 70 * 13), y_repeat=70)
     # train tensile model
     train_xgboost_model(x_train, x_test, y_train, y_test,
-                        x_shape=(-1, 70 * 13), y_repeat=1,
                         keys=const.tensile_key, output=args.dst,
                         xlsx='tensile.xlsx')
 
+    # load permeability data
     x_train, x_test, y_train, y_test = load_data(ring_filepath,
                                                  ring_property_filepath,
-                                                 const.pmb_key +
-                                                 const.iron_key)
+                                                 const.pmb_key)
+    # data preprocessing
+    x_train, x_test, y_train, y_test = \
+        data_preprocessing(x_train, x_test, y_train, y_test,
+                           x_shape=(-1, 13), y_repeat=70)
     # train permeability model
     train_xgboost_model(x_train, x_test, y_train, y_test,
-                        x_shape=(-1, 13), y_repeat=70,
                         keys=const.pmb_key, output=args.dst,
                         xlsx='permeability.xlsx')
+
+    # load iron loss data
+    x_train, x_test, y_train, y_test = load_data(ring_filepath,
+                                                 ring_property_filepath,
+                                                 const.iron_key)
+    # data preprocessing
+    x_train, x_test, y_train, y_test = \
+        data_preprocessing(x_train, x_test, y_train, y_test,
+                           x_shape=(-1, 13), y_repeat=70)
     # train iron loss model
     train_xgboost_model(x_train, x_test, y_train, y_test,
-                        x_shape=(-1, 70 * 13), y_repeat=1,
                         keys=const.iron_key, output=args.dst,
                         xlsx='iron.xlsx')
