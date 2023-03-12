@@ -12,10 +12,12 @@ from sklearn import metrics
 
 # load workpiece and material property data from excel file
 def load_data(workpiece_filepath, property_filepath, keys, header=[]):
-    x_train = {key: [] for key in keys}
-    x_test = {key: [] for key in keys}
-    y_train = {key: [] for key in keys}
-    y_test = {key: [] for key in keys}
+    data_set = {
+        'x_train': {key: [] for key in keys},
+        'x_test': {key: [] for key in keys},
+        'y_train': {key: [] for key in keys},
+        'y_test': {key: [] for key in keys}
+    }
     remove_header = const.layer_header + header
 
     for wpf, ppf in zip(workpiece_filepath, property_filepath):
@@ -36,13 +38,14 @@ def load_data(workpiece_filepath, property_filepath, keys, header=[]):
                     continue
 
                 if sheet[-1] == '5' or sheet[-1] == '6':
-                    x_test[key].append(wp_data.drop(remove_header, axis=1))
-                    y_test[key].append(pp_data[index])
+                    data_set['x_test'][key].append(wp_data.drop(remove_header,
+                                                                axis=1))
+                    data_set['y_test'][key].append(pp_data[index])
                 else:
-                    x_train[key].append(wp_data.drop(remove_header, axis=1))
-                    y_train[key].append(pp_data[index])
-
-    return x_train, x_test, y_train, y_test
+                    data_set['x_train'][key].append(wp_data.drop(remove_header,
+                                                                 axis=1))
+                    data_set['y_train'][key].append(pp_data[index])
+    return data_set
 
 def store_data(sheet, x_train, x_test, y_test, model, predict):
     for col, header in zip(range(1, len(const.output_header) + 1),
@@ -65,17 +68,25 @@ def store_data(sheet, x_train, x_test, y_test, model, predict):
         row += 1
 
 # data preprocessing to train and test data
-def data_preprocessing(x_train, x_test, y_train, y_test, x_shape, y_repeat):
-    for key in x_train.keys():
+def data_preprocessing(data_set, x_shape, y_repeat):
+    for key in data_set['x_train'].keys():
         # convert 3-D matrix to 2-D matrix
-        x_train[key] = np.reshape(np.array(x_train[key]), x_shape)
-        x_test[key] = np.reshape(np.array(x_test[key]), x_shape)
-        y_train[key] = np.repeat(y_train[key], y_repeat)
-        y_test[key] = np.repeat(y_test[key], y_repeat)
-    return x_train, x_test, y_train, y_test
+        data_set['x_train'][key] = \
+            np.reshape(np.array(data_set['x_train'][key]), x_shape)
+        data_set['x_test'][key] = \
+            np.reshape(np.array(data_set['x_test'][key]), x_shape)
+        data_set['y_train'][key] = \
+            np.repeat(data_set['y_train'][key], y_repeat)
+        data_set['y_test'][key] = np.repeat(data_set['y_test'][key], y_repeat)
+    return data_set
+
+def decode_data_set(data_set):
+    return data_set['x_train'], data_set['x_test'], \
+        data_set['y_train'], data_set['y_test']
 
 # display the correlation coefficient
-def print_corrcoef(x_train, x_test, y_train, y_test):
+def print_corrcoef(data_set):
+    x_train, x_test, y_train, y_test = decode_data_set(data_set)
     for key in x_train.keys():
         x = np.vstack((x_train[key], x_test[key]))
         y = np.concatenate((y_train[key], y_test[key]))
@@ -99,10 +110,9 @@ def print_corrcoef(x_train, x_test, y_train, y_test):
         for feature, i in zip(const.feature_header, r):
             print(feature, ': ', i)
 
-def train_xgboost_model(x_train, x_test, y_train, y_test,
-                        keys, output, xlsx):
+def train_xgboost_model(data_set, keys, output, xlsx):
+    x_train, x_test, y_train, y_test = decode_data_set(data_set)
     wb = openpyxl.Workbook()
-
     for key in keys:
         model = xgb.XGBRegressor(
             n_estimators=10000, learning_rate=0.3, max_depth=5)
@@ -121,10 +131,9 @@ def train_xgboost_model(x_train, x_test, y_train, y_test,
         # save the excel
         wb.save(output + xlsx)
 
-def train_lightgbm_model(x_train, x_test, y_train, y_test,
-                         keys, output, xlsx):
+def train_lightgbm_model(data_set, keys, output, xlsx):
+    x_train, x_test, y_train, y_test = decode_data_set(data_set)
     wb = openpyxl.Workbook()
-
     for key in keys:
         model = gbm.LGBMRegressor(boosting_type='gbdt', num_leaves=10000,
                                   learning_rate=0.3, max_depth=6)
@@ -167,40 +176,26 @@ if __name__ == '__main__':
                               './data/glcm-data/第二批圓環材料特性.xlsx']
 
     # load tensile data
-    x_train, x_test, y_train, y_test = load_data(bone_filepath,
-                                                 bone_property_filepath,
-                                                 const.tensile_key)
+    data_set = \
+        load_data(bone_filepath, bone_property_filepath, const.tensile_key)
     # data preprocessing
-    x_train, x_test, y_train, y_test = \
-        data_preprocessing(x_train, x_test, y_train, y_test,
-                           x_shape=(-1, 70 * 13), y_repeat=70)
+    data_set = data_preprocessing(data_set, x_shape=(-1, 70 * 13), y_repeat=1)
     # train tensile model
-    train_xgboost_model(x_train, x_test, y_train, y_test,
-                        keys=const.tensile_key, output=args.dst,
-                        xlsx='tensile.xlsx')
+    train_xgboost_model(data_set, keys=const.tensile_key,
+                        output=args.dst, xlsx='tensile.xlsx')
 
     # load permeability data
-    x_train, x_test, y_train, y_test = load_data(ring_filepath,
-                                                 ring_property_filepath,
-                                                 const.pmb_key)
+    data_set = load_data(ring_filepath, ring_property_filepath, const.pmb_key)
     # data preprocessing
-    x_train, x_test, y_train, y_test = \
-        data_preprocessing(x_train, x_test, y_train, y_test,
-                           x_shape=(-1, 13), y_repeat=70)
+    data_set = data_preprocessing(data_set, x_shape=(-1, 13), y_repeat=70)
     # train permeability model
-    train_xgboost_model(x_train, x_test, y_train, y_test,
-                        keys=const.pmb_key, output=args.dst,
-                        xlsx='permeability.xlsx')
+    train_xgboost_model(data_set, keys=const.pmb_key,
+                        output=args.dst, xlsx='permeability.xlsx')
 
     # load iron loss data
-    x_train, x_test, y_train, y_test = load_data(ring_filepath,
-                                                 ring_property_filepath,
-                                                 const.iron_key)
+    data_set = load_data(ring_filepath, ring_property_filepath, const.iron_key)
     # data preprocessing
-    x_train, x_test, y_train, y_test = \
-        data_preprocessing(x_train, x_test, y_train, y_test,
-                           x_shape=(-1, 13), y_repeat=70)
+    data_set = data_preprocessing(data_set, x_shape=(-1, 70 * 13), y_repeat=1)
     # train iron loss model
-    train_xgboost_model(x_train, x_test, y_train, y_test,
-                        keys=const.iron_key, output=args.dst,
-                        xlsx='iron.xlsx')
+    train_xgboost_model(data_set, keys=const.iron_key,
+                        output=args.dst, xlsx='iron.xlsx')
