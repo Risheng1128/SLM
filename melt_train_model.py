@@ -9,6 +9,8 @@ import os
 import melt_constants as const
 
 from sklearn import metrics
+from sklearn import svm
+from sklearn.preprocessing import StandardScaler
 
 # load workpiece and material property data from excel file
 def load_data(workpiece_filepath, property_filepath, keys, header=[]):
@@ -138,6 +140,31 @@ def train_lightgbm_model(data_set, keys, output, xlsx):
         model = gbm.LGBMRegressor(boosting_type='gbdt', num_leaves=10000,
                                   learning_rate=0.3, max_depth=6)
         # train lightGBM model
+        model.fit(x_train[key], y_train[key])
+        # save lightGBM model
+        pickle.dump(model, open(output + key + '.pickle.dat', 'wb'))
+        # predict x_test via lightGBM model
+        predict = model.predict(x_test[key])
+
+        # create new sheet
+        sheet = wb.create_sheet(key)
+        # store data into excel
+        store_data(sheet, x_train[key], x_test[key],
+                   y_test[key], model, predict)
+        # save the excel
+        wb.save(output + xlsx)
+
+def train_svr_model(data_set, keys, output, xlsx):
+    x_train, x_test, y_train, y_test = decode_data_set(data_set)
+    wb = openpyxl.Workbook()
+    for key in keys:
+        # normalzed
+        ss = StandardScaler()
+        x_train[key] = ss.fit_transform(x_train[key])
+        x_test[key] = ss.fit_transform(x_test[key])
+
+        model = svm.SVR(C=1000, kernel='rbf', gamma='auto')
+        # train support vector regression model
         model.fit(x_train[key], y_train[key])
         # save lightGBM model
         pickle.dump(model, open(output + key + '.pickle.dat', 'wb'))

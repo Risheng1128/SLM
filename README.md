@@ -86,7 +86,7 @@ Show the CT image in dicom viewer:
 make computed-tomography
 ```
 
-**XGBoost Model and lightGBM**: Use [XGBoost](https://github.com/dmlc/xgboost) or [lightGBM](https://github.com/microsoft/LightGBM) to predict the material property include [permeability](https://en.wikipedia.org/wiki/Permeability_(electromagnetism)), [core loss](https://en.wikipedia.org/wiki/Magnetic_core#Core_loss) and [ultimate tensile strength](https://en.wikipedia.org/wiki/Ultimate_tensile_strength) via data generated from [GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix#Other_applications). The GLCM data can be found in folder `/data/glcm-data/`.
+**Regression model**: Use [XGBoost](https://github.com/dmlc/xgboost), [lightGBM](https://github.com/microsoft/LightGBM) and [SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html) to predict the material property include [permeability](https://en.wikipedia.org/wiki/Permeability_(electromagnetism)), [core loss](https://en.wikipedia.org/wiki/Magnetic_core#Core_loss) and [ultimate tensile strength](https://en.wikipedia.org/wiki/Ultimate_tensile_strength) via data generated from [GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix#Other_applications). The GLCM data can be found in folder `/data/glcm-data/`.
 
 Install the necessary packages:
 ```
@@ -94,7 +94,7 @@ pip3 install xgboost lightgbm pandas openpyxl
 pip install -U scikit-learn
 ```
 
-Train the XGBoost or lightGBM model:
+Train the XGBoost, lightGBM or SVR model:
 ```
 make train-boost-model
 ```
@@ -102,6 +102,7 @@ make train-boost-model
 ## Reference
 * [lightGBM manual](https://lightgbm.readthedocs.io/en/v3.3.2/)
 * [XGBoost manual](https://xgboost.readthedocs.io/en/stable/)
+* [SVR manual](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html)
 * [Using Machine Learning with Detectron2](https://www.youtube.com/watch?v=eUSgtfK4ivk&ab_channel=MetaOpenSource)
 * [Detectron2 Custom Object Detection, Custom Instance Segmentation: Part I](https://www.youtube.com/watch?v=ffTURA0JM1Q&ab_channel=TheCodingBug)
 * [Detectron2 Custom Object Detection, Custom Instance Segmentation: Part II](https://www.youtube.com/watch?v=GoItxr16ae8&ab_channel=TheCodingBug)
