@@ -11,6 +11,7 @@ import melt_constants as const
 from sklearn import metrics
 from sklearn import svm
 from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
 
 class data:
     def __init__(self, keys):
@@ -169,6 +170,26 @@ class dataset:
             # create sheet and store data into excel
             self.create_sheet_and_store_data(key, wb, predict, xlsx)
 
+    def train_linear_regression_model(self, xlsx):
+        wb = openpyxl.Workbook()
+        for key in self.keys:
+            x_train, x_test, y_train, _ = self.get_key_data(key)
+            # normalzed
+            ss = StandardScaler()
+            x_train = ss.fit_transform(x_train)
+            x_test = ss.fit_transform(x_test)
+
+            model = LinearRegression()
+            # train support vector regression model
+            model.fit(x_train, y_train)
+            # save lightGBM model
+            model_name = self.output + key + '_linear.pickle.dat'
+            pickle.dump(model, open(model_name, 'wb'))
+            # predict x_test via lightGBM model
+            predict = model.predict(x_test)
+            # create sheet and store data into excel
+            self.create_sheet_and_store_data(key, wb, predict, xlsx)
+
     def train_svr_model(self, xlsx):
         wb = openpyxl.Workbook()
         for key in self.keys:
@@ -226,6 +247,7 @@ if __name__ == '__main__':
     tensile_data_set.reshape_and_repeat((-1, 70 * 13), repeat=1)
     tensile_data_set.train_xgboost_model(xlsx='tensile_xgboost.xlsx')
     tensile_data_set.train_lightgbm_model(xlsx='tensile_lightgbm.xlsx')
+    tensile_data_set.train_linear_regression_model(xlsx='tensile_linear.xlsx')
     tensile_data_set.train_svr_model(xlsx='tensile_svr.xlsx')
 
     # train permeability model
@@ -234,6 +256,7 @@ if __name__ == '__main__':
     pmb_data_set.reshape_and_repeat((-1, 13), repeat=70)
     pmb_data_set.train_xgboost_model(xlsx='pmb_xgboost.xlsx')
     pmb_data_set.train_lightgbm_model(xlsx='pmb_lightgbm.xlsx')
+    pmb_data_set.train_linear_regression_model(xlsx='pmb_linear.xlsx')
     pmb_data_set.train_svr_model(xlsx='pmb_svr.xlsx')
 
     # train iron loss model
@@ -242,4 +265,5 @@ if __name__ == '__main__':
     iron_data_set.reshape_and_repeat((-1, 70 * 13), repeat=1)
     iron_data_set.train_xgboost_model(xlsx='iron_xgboost.xlsx')
     iron_data_set.train_lightgbm_model(xlsx='iron_lightgbm.xlsx')
+    iron_data_set.train_linear_regression_model(xlsx='iron_linear.xlsx')
     iron_data_set.train_svr_model(xlsx='iron_svr.xlsx')

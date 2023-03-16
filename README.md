@@ -86,7 +86,7 @@ Show the CT image in dicom viewer:
 make computed-tomography
 ```
 
-**Regression model**: Use [XGBoost](https://github.com/dmlc/xgboost), [lightGBM](https://github.com/microsoft/LightGBM) and [SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html) to predict the material property include [permeability](https://en.wikipedia.org/wiki/Permeability_(electromagnetism)), [core loss](https://en.wikipedia.org/wiki/Magnetic_core#Core_loss) and [ultimate tensile strength](https://en.wikipedia.org/wiki/Ultimate_tensile_strength) via data generated from [GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix#Other_applications). The GLCM data can be found in folder `/data/glcm-data/`.
+**Regression model**: Use [XGBoost](https://github.com/dmlc/xgboost), [lightGBM](https://github.com/microsoft/LightGBM), [Linear Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html) and [SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html) to predict the material property include [permeability](https://en.wikipedia.org/wiki/Permeability_(electromagnetism)), [core loss](https://en.wikipedia.org/wiki/Magnetic_core#Core_loss) and [ultimate tensile strength](https://en.wikipedia.org/wiki/Ultimate_tensile_strength) via data generated from [GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix#Other_applications). The GLCM data can be found in folder `/data/glcm-data/`.
 
 Install the necessary packages:
 ```
@@ -94,9 +94,9 @@ pip3 install xgboost lightgbm pandas openpyxl
 pip install -U scikit-learn
 ```
 
-Train the XGBoost, lightGBM or SVR model:
+Train the XGBoost, lightGBM, Linear Regression or SVR model:
 ```
-make train-boost-model
+make train-model
 ```
 
 ## Reference
