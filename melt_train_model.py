@@ -12,6 +12,8 @@ from sklearn import metrics
 from sklearn import svm
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
+from sklearn.feature_selection import mutual_info_regression
+from sklearn.feature_selection import SelectKBest
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
@@ -30,6 +32,9 @@ class data:
 
     def repeat(self, key, repeat):
         self.data[key] = np.repeat(self.data[key], repeat)
+
+    def unique(self, key, k):
+        self.data[key] = self.data[key][::k]
 
     def get_key_data(self, key):
         return self.data[key]
@@ -78,6 +83,12 @@ class dataset:
             self.x_test.reshape(key, shape)
             self.y_train.repeat(key, repeat)
             self.y_test.repeat(key, repeat)
+
+    # get all unique data in repeated array
+    def unique(self, k):
+        for key in self.keys:
+            self.y_train.unique(key, k)
+            self.y_test.unique(key, k)
 
     # show the correlation coefficient
     def show_corrcoef(self):
@@ -139,6 +150,22 @@ class dataset:
         # save the excel
         wb.save(self.output + xlsx)
 
+    # compute mutual information and retain "k" best data
+    def mutual_information(self, k=3):
+        for key in self.keys:
+            x_train, x_test, y_train, _ = self.get_key_data(key)
+            selector = SelectKBest(mutual_info_regression, k=k)
+            self.x_train.data[key] = selector.fit_transform(x_train, y_train)
+            # find the index of removing feature
+            supports = selector.get_support()
+            false_index = np.where(supports == False)[0]
+            self.x_test.data[key] = np.delete(x_test, false_index, axis=1)
+
+            print('-----------', key, '-----------')
+            for feature, support in zip(const.feature_header, supports):
+                if support == False:
+                    print('remove: ', feature)
+
     # principal component analysis
     def PCA(self, components):
         pca = PCA(n_components=components)
@@ -163,7 +190,7 @@ class dataset:
             x_train, x_test, y_train, _ = self.get_key_data(key)
             model = xgb.XGBRegressor(n_estimators=10000,
                                      learning_rate=0.3,
-                                     max_depth=5)
+                                     max_depth=4)
             # train XGBoost model
             model.fit(x_train, y_train)
             # save XGBoost model
@@ -262,9 +289,14 @@ if __name__ == '__main__':
                               './data/glcm-data/第二批圓環材料特性.xlsx']
 
     # train tensile model
+    retain_feature = 10
+    layer = 70
     tensile_data_set = dataset(const.tensile_key, output=args.dst)
     tensile_data_set.load_data(bone_filepath, bone_property_filepath)
-    tensile_data_set.reshape_and_repeat((-1, 70 * 13), repeat=1)
+    tensile_data_set.reshape_and_repeat((-1, 13), repeat=layer)
+    tensile_data_set.mutual_information(retain_feature)
+    tensile_data_set.unique(layer)
+    tensile_data_set.reshape_and_repeat((-1, layer * retain_feature), repeat=1)
     tensile_data_set.train_xgboost_model(xlsx='tensile_xgboost.xlsx')
     tensile_data_set.train_lightgbm_model(xlsx='tensile_lightgbm.xlsx')
     tensile_data_set.train_linear_regression_model(xlsx='tensile_linear.xlsx')
@@ -273,7 +305,8 @@ if __name__ == '__main__':
     # train permeability model
     pmb_data_set = dataset(const.pmb_key, output=args.dst)
     pmb_data_set.load_data(ring_filepath, ring_property_filepath)
-    pmb_data_set.reshape_and_repeat((-1, 13), repeat=70)
+    pmb_data_set.reshape_and_repeat((-1, 13), repeat=layer)
+    pmb_data_set.mutual_information(retain_feature)
     pmb_data_set.train_xgboost_model(xlsx='pmb_xgboost.xlsx')
     pmb_data_set.train_lightgbm_model(xlsx='pmb_lightgbm.xlsx')
     pmb_data_set.train_linear_regression_model(xlsx='pmb_linear.xlsx')
@@ -282,7 +315,10 @@ if __name__ == '__main__':
     # train iron loss model
     iron_data_set = dataset(const.iron_key, output=args.dst)
     iron_data_set.load_data(ring_filepath, ring_property_filepath)
-    iron_data_set.reshape_and_repeat((-1, 70 * 13), repeat=1)
+    iron_data_set.reshape_and_repeat((-1, 13), repeat=layer)
+    iron_data_set.mutual_information(retain_feature)
+    iron_data_set.unique(layer)
+    iron_data_set.reshape_and_repeat((-1, layer * retain_feature), repeat=1)
     iron_data_set.train_xgboost_model(xlsx='iron_xgboost.xlsx')
     iron_data_set.train_lightgbm_model(xlsx='iron_lightgbm.xlsx')
     iron_data_set.train_linear_regression_model(xlsx='iron_linear.xlsx')
