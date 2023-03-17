@@ -12,6 +12,8 @@ from sklearn import metrics
 from sklearn import svm
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 
 class data:
     def __init__(self, keys):
@@ -136,6 +138,24 @@ class dataset:
         self.store_data(key, sheet, predict)
         # save the excel
         wb.save(self.output + xlsx)
+
+    # principal component analysis
+    def PCA(self, components):
+        pca = PCA(n_components=components)
+        for key in self.keys:
+            self.x_train.data[key] = \
+                pca.fit_transform(self.x_train.get_key_data(key))
+            self.x_test.data[key] = \
+                pca.fit_transform(self.x_test.get_key_data(key))
+
+    # t-distributed stochastic neighbor embedding
+    def TSNE(self, components):
+        tsne = TSNE(n_components=components)
+        for key in self.keys:
+            self.x_train.data[key] = \
+                tsne.fit_transform(self.x_train.get_key_data(key))
+            self.x_test.data[key] = \
+                tsne.fit_transform(self.x_test.get_key_data(key))
 
     def train_xgboost_model(self, xlsx):
         wb = openpyxl.Workbook()
