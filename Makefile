@@ -3,6 +3,23 @@
 
 PYTHON = python3
 
+help:
+	@echo "-------------------------- command manual -----------------------------------"
+	@echo "|         command         |                   description                   |"
+	@echo "|-------------------------+-------------------------------------------------|"
+	@echo "| help                    | show command manual                             |"
+	@echo "| melt_train_model        | train Mask R-CNN model                          |"
+	@echo "| labelme2coco            | convert image to coco dataset                   |"
+	@echo "| gen-mask                | generate mask image                             |"
+	@echo "| detect-defects          | load recoating model and detect images          |"
+	@echo "| recoat-system           | open recoat defects detecting system            |"
+	@echo "| geometric-transform     | do geometric transform                          |"
+	@echo "| find-contours           | isolate every workpieces in image               |"
+	@echo "| gen-glcm                | generate glcm feature from the workpiece images |"
+	@echo "| computed-tomography     | view computed tomography via dicom viewer       |"
+	@echo "| train-model             | train model to predict material property        |"
+	@echo "-----------------------------------------------------------------------------"
+
 # train model
 train-mask-rcnn: labelme2coco
 	$(PYTHON) recoat_maskrcnn.py --src $(RCNN_SRC_PATH) --dst $(RCNN_DST_PATH)
