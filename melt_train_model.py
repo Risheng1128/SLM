@@ -113,7 +113,7 @@ class dataset:
         for col, data in zip(range(base_col, base_col + len(datas)), datas):
             sheet.cell(base_row, col).value = data
 
-    # store data into excel
+    # store model result into excel
     def __store_result_data(self, key, sheet, predict):
         x_train, x_test, _, y_test = self.__read_key_data(key)
         datas = [x_train.shape[0],
@@ -159,7 +159,7 @@ class dataset:
         self.__store_data(sheet, const.svr_header, 3, 4)
         self.__store_data(sheet, datas, 4, 4)
 
-    # load workpiece and material property data from excel file
+    # load workpiece and material property data from excel
     def load_data(self, workpiece_filepath, property_filepath, header=[]):
         remove_header = const.layer_header + header
         for wpf, ppf in zip(workpiece_filepath, property_filepath):
@@ -266,17 +266,17 @@ class dataset:
             self.__x_train.write_key_data(key, tsne_x_train)
             self.__x_test.write_key_data(key, tsne_x_test)
 
-    # set xgboost model parameter
+    # set XGBoost model parameter
     def xgboost_set(self, n_estimators=1000, learning_rate=0.3, max_depth=5):
         self.__xgboost.write(n_estimators, learning_rate, max_depth)
 
-    # set xgboost model parameter
+    # set lightGBM model parameter
     def lightgbm_set(self, boosting_type='gbdt', num_leaves=1000,
                      learning_rate=0.3, max_depth=5):
         self.__xgboost.write(boosting_type, num_leaves,
                              learning_rate, max_depth)
 
-    # set svr parameter
+    # set SVR model parameter
     def svr_set(self, C=1000, kernel='rbf', gamma='auto'):
         self.__svr.write(C, kernel, gamma)
 
@@ -285,16 +285,13 @@ class dataset:
         for key in self.__keys:
             x_train, x_test, y_train, _ = self.__read_key_data(key)
             n_estimators, learning_rate, max_depth = self.__xgboost.read()
+
             model = xgb.XGBRegressor(n_estimators=n_estimators,
                                      learning_rate=learning_rate,
                                      max_depth=max_depth)
-
             # train XGBoost model
             model.fit(x_train, y_train)
-            # save XGBoost model
-            model_name = self.__output + key + '_xgboost.pickle.dat'
-            pickle.dump(model, open(model_name, 'wb'))
-            # predict x_test via XGBoost model
+            # predict y_test via XGBoost model
             predict = model.predict(x_test)
 
             # create new sheet
@@ -305,23 +302,24 @@ class dataset:
             # save the excel
             wb.save(self.__output + xlsx)
 
+            # save XGBoost model
+            model_name = self.__output + key + '_xgboost.pickle.dat'
+            pickle.dump(model, open(model_name, 'wb'))
+
     def train_lightgbm_model(self, xlsx):
         wb = openpyxl.Workbook()
         for key in self.__keys:
             x_train, x_test, y_train, _ = self.__read_key_data(key)
             boosting_type, num_leaves, learning_rate, max_depth = \
                 self.__lightgbm.read()
+
             model = gbm.LGBMRegressor(boosting_type=boosting_type,
                                       num_leaves=num_leaves,
                                       learning_rate=learning_rate,
                                       max_depth=max_depth)
-
             # train lightGBM model
             model.fit(x_train, y_train)
-            # save lightGBM model
-            model_name = self.__output + key + '_lightgbm.pickle.dat'
-            pickle.dump(model, open(model_name, 'wb'))
-            # predict x_test via lightGBM model
+            # predict y_test via lightGBM model
             predict = model.predict(x_test)
 
             # create new sheet
@@ -331,6 +329,10 @@ class dataset:
             self.__store_lightgbm_setting(sheet)
             # save the excel
             wb.save(self.__output + xlsx)
+
+            # save lightGBM model
+            model_name = self.__output + key + '_lightgbm.pickle.dat'
+            pickle.dump(model, open(model_name, 'wb'))
 
     def train_linear_regression_model(self, xlsx):
         wb = openpyxl.Workbook()
@@ -342,12 +344,9 @@ class dataset:
             x_test = ss.fit_transform(x_test)
 
             model = LinearRegression()
-            # train support vector regression model
+            # train linear regression model
             model.fit(x_train, y_train)
-            # save lightGBM model
-            model_name = self.__output + key + '_linear.pickle.dat'
-            pickle.dump(model, open(model_name, 'wb'))
-            # predict x_test via lightGBM model
+            # predict y_test via linear regression model
             predict = model.predict(x_test)
 
             # create new sheet
@@ -356,6 +355,10 @@ class dataset:
             self.__store_result_data(key, sheet, predict)
             # save the excel
             wb.save(self.__output + xlsx)
+
+            # save linear regression model
+            model_name = self.__output + key + '_linear.pickle.dat'
+            pickle.dump(model, open(model_name, 'wb'))
 
     def train_svr_model(self, xlsx):
         wb = openpyxl.Workbook()
@@ -368,12 +371,9 @@ class dataset:
             x_test = ss.fit_transform(x_test)
 
             model = svm.SVR(C=C, kernel=kernel, gamma=gamma)
-            # train support vector regression model
+            # train SVR model
             model.fit(x_train, y_train)
-            # save lightGBM model
-            model_name = self.__output + key + '_svr.pickle.dat'
-            pickle.dump(model, open(model_name, 'wb'))
-            # predict x_test via lightGBM model
+            # predict y_test via SVR model
             predict = model.predict(x_test)
 
             # create new sheet
@@ -383,6 +383,10 @@ class dataset:
             self.__store_svr_setting(sheet)
             # save the excel
             wb.save(self.__output + xlsx)
+
+            # save SVR model
+            model_name = self.__output + key + '_svr.pickle.dat'
+            pickle.dump(model, open(model_name, 'wb'))
 
     def display_all_data(self):
         for key in self.__keys:
@@ -396,7 +400,7 @@ class dataset:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dst',
-                        default='./result/xgboost/',
+                        default='./result/melt-model/',
                         help='destination path')
     args = parser.parse_args()
 
