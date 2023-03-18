@@ -273,8 +273,8 @@ class dataset:
     # set lightGBM model parameter
     def lightgbm_set(self, boosting_type='gbdt', num_leaves=1000,
                      learning_rate=0.3, max_depth=5):
-        self.__xgboost.write(boosting_type, num_leaves,
-                             learning_rate, max_depth)
+        self.__lightgbm.write(boosting_type, num_leaves,
+                              learning_rate, max_depth)
 
     # set SVR model parameter
     def svr_set(self, C=1000, kernel='rbf', gamma='auto'):
