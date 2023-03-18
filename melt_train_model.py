@@ -86,7 +86,7 @@ class svr:
         return self.C, self.kernel, self.gamma
 
 class dataset:
-    def __init__(self, keys, output):
+    def __init__(self, keys, output, feature_num=13):
         self.x_train = data(keys)
         self.x_test = data(keys)
         self.y_train = data(keys)
@@ -96,6 +96,8 @@ class dataset:
         self.svr = svr()
         self.keys = keys
         self.output = output
+        self.feature_num = {key: feature_num for key in keys}
+        self.remove_feature = {key: [] for key in keys}
 
     # load workpiece and material property data from excel file
     def load_data(self, workpiece_filepath, property_filepath, header=[]):
@@ -169,19 +171,24 @@ class dataset:
         return self.x_train.get_key_data(key), self.x_test.get_key_data(key), \
             self.y_train.get_key_data(key), self.y_test.get_key_data(key)
 
-    # store data into excel
-    def store_data(self, key, sheet, predict):
-        x_train, x_test, _, y_test = self.get_key_data(key)
+    # store data in excel (row direction)
+    def store_data(self, sheet, datas, base_row, base_col):
+        for col, data in zip(range(base_col, base_col + len(datas)), datas):
+            sheet.cell(base_row, col).value = data
 
-        for col, header in zip(range(1, len(const.output_header) + 1),
-                               const.output_header):
-            sheet.cell(1, col).value = header
-        sheet.cell(2, 4).value = x_train.shape[0]
-        sheet.cell(2, 5).value = x_test.shape[0]
-        # compute R2 score, MSE and MAE
-        sheet.cell(2, 6).value = metrics.r2_score(y_test, predict)
-        sheet.cell(2, 7).value = metrics.mean_squared_error(y_test, predict)
-        sheet.cell(2, 8).value = metrics.mean_absolute_error(y_test, predict)
+    # store data into excel
+    def store_result_data(self, key, sheet, predict):
+        x_train, x_test, _, y_test = self.get_key_data(key)
+        datas = [x_train.shape[0],
+                 x_test.shape[0],
+                 self.feature_num[key],
+                 ', '.join(map(str, self.remove_feature[key])),
+                 metrics.r2_score(y_test, predict),
+                 metrics.mean_squared_error(y_test, predict),
+                 metrics.mean_absolute_error(y_test, predict)]
+
+        self.store_data(sheet, const.output_header, 1, 1)
+        self.store_data(sheet, datas, 2, 4)
 
         row = 2
         for pre, true in zip(predict, y_test):
@@ -190,14 +197,30 @@ class dataset:
             sheet.cell(row, 3).value = (abs(pre - true) / true) * 100
             row += 1
 
-    # create sheet and store data into excel
-    def create_sheet_and_store_data(self, key, wb, predict, xlsx):
-        # create new sheet
-        sheet = wb.create_sheet(key)
-        # store data into excel
-        self.store_data(key, sheet, predict)
-        # save the excel
-        wb.save(self.output + xlsx)
+    # store XGBoost model setting into excel
+    def store_xgboost_setting(self, sheet):
+        n_estimators, learning_rate, max_depth = self.xgboost.read()
+        datas = [n_estimators, learning_rate, max_depth]
+
+        self.store_data(sheet, const.xgboost_header, 3, 4)
+        self.store_data(sheet, datas, 4, 4)
+
+    # store lightGBM model setting into excel
+    def store_lightgbm_setting(self, sheet):
+        boosting_type, num_leaves, learning_rate, max_depth = \
+            self.lightgbm.read()
+        datas = [boosting_type, num_leaves, learning_rate, max_depth]
+
+        self.store_data(sheet, const.lightgbm_header, 3, 4)
+        self.store_data(sheet, datas, 4, 4)
+
+    # store SVR model setting into excel
+    def store_svr_setting(self, sheet):
+        C, kernel, gamma = self.svr.read()
+        datas = [C, kernel, gamma]
+
+        self.store_data(sheet, const.svr_header, 3, 4)
+        self.store_data(sheet, datas, 4, 4)
 
     # compute mutual information and retain "k" best data
     def mutual_information(self, k=3):
@@ -210,10 +233,12 @@ class dataset:
             false_index = np.where(supports == False)[0]
             self.x_test.data[key] = np.delete(x_test, false_index, axis=1)
 
-            print('-----------', key, '-----------')
+            # record retained feature number
+            self.feature_num[key] = k
+            # record removed feature
             for feature, support in zip(const.feature_header, supports):
                 if support == False:
-                    print('remove: ', feature)
+                    self.remove_feature[key].append(feature)
 
     # principal component analysis
     def PCA(self, components):
@@ -262,8 +287,14 @@ class dataset:
             pickle.dump(model, open(model_name, 'wb'))
             # predict x_test via XGBoost model
             predict = model.predict(x_test)
-            # create sheet and store data into excel
-            self.create_sheet_and_store_data(key, wb, predict, xlsx)
+
+            # create new sheet
+            sheet = wb.create_sheet(key)
+            # store data into excel
+            self.store_result_data(key, sheet, predict)
+            self.store_xgboost_setting(sheet)
+            # save the excel
+            wb.save(self.output + xlsx)
 
     def train_lightgbm_model(self, xlsx):
         wb = openpyxl.Workbook()
@@ -283,8 +314,14 @@ class dataset:
             pickle.dump(model, open(model_name, 'wb'))
             # predict x_test via lightGBM model
             predict = model.predict(x_test)
-            # create sheet and store data into excel
-            self.create_sheet_and_store_data(key, wb, predict, xlsx)
+
+            # create new sheet
+            sheet = wb.create_sheet(key)
+            # store data into excel
+            self.store_result_data(key, sheet, predict)
+            self.store_lightgbm_setting(sheet)
+            # save the excel
+            wb.save(self.output + xlsx)
 
     def train_linear_regression_model(self, xlsx):
         wb = openpyxl.Workbook()
@@ -303,8 +340,13 @@ class dataset:
             pickle.dump(model, open(model_name, 'wb'))
             # predict x_test via lightGBM model
             predict = model.predict(x_test)
-            # create sheet and store data into excel
-            self.create_sheet_and_store_data(key, wb, predict, xlsx)
+
+            # create new sheet
+            sheet = wb.create_sheet(key)
+            # store data into excel
+            self.store_result_data(key, sheet, predict)
+            # save the excel
+            wb.save(self.output + xlsx)
 
     def train_svr_model(self, xlsx):
         wb = openpyxl.Workbook()
@@ -324,8 +366,14 @@ class dataset:
             pickle.dump(model, open(model_name, 'wb'))
             # predict x_test via lightGBM model
             predict = model.predict(x_test)
-            # create sheet and store data into excel
-            self.create_sheet_and_store_data(key, wb, predict, xlsx)
+
+            # create new sheet
+            sheet = wb.create_sheet(key)
+            # store data into excel
+            self.store_result_data(key, sheet, predict)
+            self.store_svr_setting(sheet)
+            # save the excel
+            wb.save(self.output + xlsx)
 
     def display_all_data(self):
         for key in self.keys:

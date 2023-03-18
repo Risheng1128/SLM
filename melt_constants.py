@@ -11,7 +11,11 @@ error_data = 'X'
 
 # output excel information
 output_header = ['prediction', 'true', 'error(%)', 'train number',
-                 'test number', 'R2 Score', 'MSE', 'MAE']
+                 'test number', 'feature numebr', 'remove feature',
+                 'R2 score', 'MSE', 'MAE']
+xgboost_header = ['n estimator', 'learning rate', 'max depth']
+lightgbm_header = ['boosting type', 'num leaves', 'learning rate', 'max depth']
+svr_header = ['C', 'kernel', 'gamma']
 
 # dictionary key
 tensile_key = ['tensile']
