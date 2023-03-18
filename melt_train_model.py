@@ -19,85 +19,145 @@ from sklearn.manifold import TSNE
 
 class data:
     def __init__(self, keys):
-        self.data = {key: [] for key in keys}
+        self.__data = {key: [] for key in keys}
 
     def wp_append(self, wp_data, key, remove_header):
-        self.data[key].append(wp_data.drop(remove_header, axis=1))
+        self.__data[key].append(wp_data.drop(remove_header, axis=1))
 
     def pp_append(self, pp_data, key):
-        self.data[key].append(pp_data)
+        self.__data[key].append(pp_data)
 
     def reshape(self, key, shape):
-        self.data[key] = np.reshape(np.array(self.data[key]), shape)
+        self.__data[key] = np.reshape(np.array(self.__data[key]), shape)
 
     def repeat(self, key, repeat):
-        self.data[key] = np.repeat(self.data[key], repeat)
+        self.__data[key] = np.repeat(self.__data[key], repeat)
 
     def unique(self, key, k):
-        self.data[key] = self.data[key][::k]
+        self.__data[key] = self.__data[key][::k]
 
-    def get_key_data(self, key):
-        return self.data[key]
+    def read_key_data(self, key):
+        return self.__data[key]
+
+    def write_key_data(self, key, data):
+        self.__data[key] = data
 
 class xgboost:
     def __init__(self):
-        self.n_estimators = 1000
-        self.learning_rate = 0.3
-        self.max_depth = 5
+        self.__n_estimators = 1000
+        self.__learning_rate = 0.3
+        self.__max_depth = 5
 
     def write(self, n_estimators=1000, learning_rate=0.3, max_depth=5):
-        self.n_estimators = n_estimators
-        self.learning_rate = learning_rate
-        self.max_depth = max_depth
+        self.__n_estimators = n_estimators
+        self.__learning_rate = learning_rate
+        self.__max_depth = max_depth
 
     def read(self):
-        return self.n_estimators, self.learning_rate, self.max_depth
+        return self.__n_estimators, self.__learning_rate, self.__max_depth
 
 class lightgbm:
     def __init__(self):
-        self.boosting_type = 'gbdt'
-        self.num_leaves = 1000
-        self.learning_rate = 0.3
-        self.max_depth = 5
+        self.__boosting_type = 'gbdt'
+        self.__num_leaves = 1000
+        self.__learning_rate = 0.3
+        self.__max_depth = 5
 
     def write(self, boosting_type='gbdt', num_leaves=1000, learning_rate=0.3,
               max_depth=5):
-        self.boosting_type = boosting_type
-        self.num_leaves = num_leaves
-        self.learning_rate = learning_rate
-        self.max_depth = max_depth
+        self.__boosting_type = boosting_type
+        self.__num_leaves = num_leaves
+        self.__learning_rate = learning_rate
+        self.__max_depth = max_depth
 
     def read(self):
-        return self.boosting_type, self.num_leaves, \
-            self.learning_rate, self.max_depth
+        return self.__boosting_type, self.__num_leaves, \
+            self.__learning_rate, self.__max_depth
 
 class svr:
     def __init__(self):
-        self.C = 1000
-        self.kernel = 'rbf'
-        self.gamma = 'auto'
+        self.__C = 1000
+        self.__kernel = 'rbf'
+        self.__gamma = 'auto'
 
     def write(self, C=1000, kernel='rbf', gamma='auto'):
-        self.C = C
-        self.kernel = kernel
-        self.gamma = gamma
+        self.__C = C
+        self.__kernel = kernel
+        self.__gamma = gamma
 
     def read(self):
-        return self.C, self.kernel, self.gamma
+        return self.__C, self.__kernel, self.__gamma
 
 class dataset:
     def __init__(self, keys, output, feature_num=13):
-        self.x_train = data(keys)
-        self.x_test = data(keys)
-        self.y_train = data(keys)
-        self.y_test = data(keys)
-        self.xgboost = xgboost()
-        self.lightgbm = lightgbm()
-        self.svr = svr()
-        self.keys = keys
-        self.output = output
-        self.feature_num = {key: feature_num for key in keys}
-        self.remove_feature = {key: [] for key in keys}
+        self.__x_train = data(keys)
+        self.__x_test = data(keys)
+        self.__y_train = data(keys)
+        self.__y_test = data(keys)
+        self.__xgboost = xgboost()
+        self.__lightgbm = lightgbm()
+        self.__svr = svr()
+        self.__keys = keys
+        self.__output = output
+        self.__feature_num = {key: feature_num for key in keys}
+        self.__remove_feature = {key: [] for key in keys}
+
+    def __read_key_data(self, key):
+        return self.__x_train.read_key_data(key), \
+            self.__x_test.read_key_data(key), \
+            self.__y_train.read_key_data(key), \
+            self.__y_test.read_key_data(key)
+
+    # store data in excel (row direction)
+    def __store_data(self, sheet, datas, base_row, base_col):
+        for col, data in zip(range(base_col, base_col + len(datas)), datas):
+            sheet.cell(base_row, col).value = data
+
+    # store data into excel
+    def __store_result_data(self, key, sheet, predict):
+        x_train, x_test, _, y_test = self.__read_key_data(key)
+        datas = [x_train.shape[0],
+                 x_test.shape[0],
+                 self.__feature_num[key],
+                 ', '.join(map(str, self.__remove_feature[key])),
+                 metrics.r2_score(y_test, predict),
+                 metrics.mean_squared_error(y_test, predict),
+                 metrics.mean_absolute_error(y_test, predict)]
+
+        self.__store_data(sheet, const.output_header, 1, 1)
+        self.__store_data(sheet, datas, 2, 4)
+
+        row = 2
+        for pre, true in zip(predict, y_test):
+            sheet.cell(row, 1).value = pre
+            sheet.cell(row, 2).value = true
+            sheet.cell(row, 3).value = (abs(pre - true) / true) * 100
+            row += 1
+
+    # store XGBoost model setting into excel
+    def __store_xgboost_setting(self, sheet):
+        n_estimators, learning_rate, max_depth = self.__xgboost.read()
+        datas = [n_estimators, learning_rate, max_depth]
+
+        self.__store_data(sheet, const.xgboost_header, 3, 4)
+        self.__store_data(sheet, datas, 4, 4)
+
+    # store lightGBM model setting into excel
+    def __store_lightgbm_setting(self, sheet):
+        boosting_type, num_leaves, learning_rate, max_depth = \
+            self.__lightgbm.read()
+        datas = [boosting_type, num_leaves, learning_rate, max_depth]
+
+        self.__store_data(sheet, const.lightgbm_header, 3, 4)
+        self.__store_data(sheet, datas, 4, 4)
+
+    # store SVR model setting into excel
+    def __store_svr_setting(self, sheet):
+        C, kernel, gamma = self.__svr.read()
+        datas = [C, kernel, gamma]
+
+        self.__store_data(sheet, const.svr_header, 3, 4)
+        self.__store_data(sheet, datas, 4, 4)
 
     # load workpiece and material property data from excel file
     def load_data(self, workpiece_filepath, property_filepath, header=[]):
@@ -107,7 +167,7 @@ class dataset:
             print('read material property file: ', ppf)
             wp_sheets = pd.read_excel(wpf, sheet_name=None)
 
-            for key in self.keys:
+            for key in self.__keys:
                 # the dictionary key must same in property excel
                 pp_data = pd.read_excel(ppf, sheet_name=key)
                 pp_data = np.array(pp_data.drop(const.trail_header, axis=1))
@@ -120,31 +180,31 @@ class dataset:
                         continue
 
                     if sheet[-1] == '5' or sheet[-1] == '6':
-                        self.x_test.wp_append(wp_data, key, remove_header)
-                        self.y_test.pp_append(pp_data[index], key)
+                        self.__x_test.wp_append(wp_data, key, remove_header)
+                        self.__y_test.pp_append(pp_data[index], key)
                     else:
-                        self.x_train.wp_append(wp_data, key, remove_header)
-                        self.y_train.pp_append(pp_data[index], key)
+                        self.__x_train.wp_append(wp_data, key, remove_header)
+                        self.__y_train.pp_append(pp_data[index], key)
 
     # change the data shape or repeat same data
     def reshape_and_repeat(self, shape, repeat=1):
-        for key in self.keys:
+        for key in self.__keys:
             # convert 3-D matrix to 2-D matrix
-            self.x_train.reshape(key, shape)
-            self.x_test.reshape(key, shape)
-            self.y_train.repeat(key, repeat)
-            self.y_test.repeat(key, repeat)
+            self.__x_train.reshape(key, shape)
+            self.__x_test.reshape(key, shape)
+            self.__y_train.repeat(key, repeat)
+            self.__y_test.repeat(key, repeat)
 
     # get all unique data in repeated array
     def unique(self, k):
-        for key in self.keys:
-            self.y_train.unique(key, k)
-            self.y_test.unique(key, k)
+        for key in self.__keys:
+            self.__y_train.unique(key, k)
+            self.__y_test.unique(key, k)
 
     # show the correlation coefficient
     def show_corrcoef(self):
         for key in self.keys:
-            x_train, x_test, y_train, y_test = self.get_key_data(key)
+            x_train, x_test, y_train, y_test = self.__read_key_data(key)
             x = np.vstack((x_train, x_test))
             y = np.concatenate((y_train, y_test))
             x_mean = np.mean(x, axis=0)
@@ -167,115 +227,64 @@ class dataset:
             for feature, i in zip(const.feature_header, r):
                 print(feature, ': ', i)
 
-    def get_key_data(self, key):
-        return self.x_train.get_key_data(key), self.x_test.get_key_data(key), \
-            self.y_train.get_key_data(key), self.y_test.get_key_data(key)
-
-    # store data in excel (row direction)
-    def store_data(self, sheet, datas, base_row, base_col):
-        for col, data in zip(range(base_col, base_col + len(datas)), datas):
-            sheet.cell(base_row, col).value = data
-
-    # store data into excel
-    def store_result_data(self, key, sheet, predict):
-        x_train, x_test, _, y_test = self.get_key_data(key)
-        datas = [x_train.shape[0],
-                 x_test.shape[0],
-                 self.feature_num[key],
-                 ', '.join(map(str, self.remove_feature[key])),
-                 metrics.r2_score(y_test, predict),
-                 metrics.mean_squared_error(y_test, predict),
-                 metrics.mean_absolute_error(y_test, predict)]
-
-        self.store_data(sheet, const.output_header, 1, 1)
-        self.store_data(sheet, datas, 2, 4)
-
-        row = 2
-        for pre, true in zip(predict, y_test):
-            sheet.cell(row, 1).value = pre
-            sheet.cell(row, 2).value = true
-            sheet.cell(row, 3).value = (abs(pre - true) / true) * 100
-            row += 1
-
-    # store XGBoost model setting into excel
-    def store_xgboost_setting(self, sheet):
-        n_estimators, learning_rate, max_depth = self.xgboost.read()
-        datas = [n_estimators, learning_rate, max_depth]
-
-        self.store_data(sheet, const.xgboost_header, 3, 4)
-        self.store_data(sheet, datas, 4, 4)
-
-    # store lightGBM model setting into excel
-    def store_lightgbm_setting(self, sheet):
-        boosting_type, num_leaves, learning_rate, max_depth = \
-            self.lightgbm.read()
-        datas = [boosting_type, num_leaves, learning_rate, max_depth]
-
-        self.store_data(sheet, const.lightgbm_header, 3, 4)
-        self.store_data(sheet, datas, 4, 4)
-
-    # store SVR model setting into excel
-    def store_svr_setting(self, sheet):
-        C, kernel, gamma = self.svr.read()
-        datas = [C, kernel, gamma]
-
-        self.store_data(sheet, const.svr_header, 3, 4)
-        self.store_data(sheet, datas, 4, 4)
-
     # compute mutual information and retain "k" best data
     def mutual_information(self, k=3):
-        for key in self.keys:
-            x_train, x_test, y_train, _ = self.get_key_data(key)
+        for key in self.__keys:
+            x_train, x_test, y_train, _ = self.__read_key_data(key)
             selector = SelectKBest(mutual_info_regression, k=k)
-            self.x_train.data[key] = selector.fit_transform(x_train, y_train)
+            self.__x_train.write_key_data(key, selector.fit_transform(x_train,
+                                                                      y_train))
             # find the index of removing feature
             supports = selector.get_support()
             false_index = np.where(supports == False)[0]
-            self.x_test.data[key] = np.delete(x_test, false_index, axis=1)
+            self.__x_test.write_key_data(key, np.delete(x_test,
+                                                        false_index,
+                                                        axis=1))
 
             # record retained feature number
-            self.feature_num[key] = k
+            self.__feature_num[key] = k
             # record removed feature
             for feature, support in zip(const.feature_header, supports):
                 if support == False:
-                    self.remove_feature[key].append(feature)
+                    self.__remove_feature[key].append(feature)
 
     # principal component analysis
     def PCA(self, components):
         pca = PCA(n_components=components)
-        for key in self.keys:
-            self.x_train.data[key] = \
-                pca.fit_transform(self.x_train.get_key_data(key))
-            self.x_test.data[key] = \
-                pca.fit_transform(self.x_test.get_key_data(key))
+        for key in self.__keys:
+            pca_x_train = pca.fit_transform(self.__x_train.read_key_data(key))
+            pca_x_test = pca.fit_transform(self.__x_test.read_key_data(key))
+            self.__x_train.write_key_data(key, pca_x_train)
+            self.__x_test.write_key_data(key, pca_x_test)
 
     # t-distributed stochastic neighbor embedding
     def TSNE(self, components):
         tsne = TSNE(n_components=components)
-        for key in self.keys:
-            self.x_train.data[key] = \
-                tsne.fit_transform(self.x_train.get_key_data(key))
-            self.x_test.data[key] = \
-                tsne.fit_transform(self.x_test.get_key_data(key))
+        for key in self.__keys:
+            tsne_x_train = tsne.fit_transform(self.__x_train.read_key_data(key))
+            tsne_x_test = tsne.fit_transform(self.__x_test.read_key_data(key))
+            self.__x_train.write_key_data(key, tsne_x_train)
+            self.__x_test.write_key_data(key, tsne_x_test)
 
     # set xgboost model parameter
     def xgboost_set(self, n_estimators=1000, learning_rate=0.3, max_depth=5):
-        self.xgboost.write(n_estimators, learning_rate, max_depth)
+        self.__xgboost.write(n_estimators, learning_rate, max_depth)
 
     # set xgboost model parameter
     def lightgbm_set(self, boosting_type='gbdt', num_leaves=1000,
                      learning_rate=0.3, max_depth=5):
-        self.xgboost.write(boosting_type, num_leaves, learning_rate, max_depth)
+        self.__xgboost.write(boosting_type, num_leaves,
+                             learning_rate, max_depth)
 
     # set svr parameter
     def svr_set(self, C=1000, kernel='rbf', gamma='auto'):
-        self.svr.write(C, kernel, gamma)
+        self.__svr.write(C, kernel, gamma)
 
     def train_xgboost_model(self, xlsx):
         wb = openpyxl.Workbook()
-        for key in self.keys:
-            x_train, x_test, y_train, _ = self.get_key_data(key)
-            n_estimators, learning_rate, max_depth = self.xgboost.read()
+        for key in self.__keys:
+            x_train, x_test, y_train, _ = self.__read_key_data(key)
+            n_estimators, learning_rate, max_depth = self.__xgboost.read()
             model = xgb.XGBRegressor(n_estimators=n_estimators,
                                      learning_rate=learning_rate,
                                      max_depth=max_depth)
@@ -283,7 +292,7 @@ class dataset:
             # train XGBoost model
             model.fit(x_train, y_train)
             # save XGBoost model
-            model_name = self.output + key + '_xgboost.pickle.dat'
+            model_name = self.__output + key + '_xgboost.pickle.dat'
             pickle.dump(model, open(model_name, 'wb'))
             # predict x_test via XGBoost model
             predict = model.predict(x_test)
@@ -291,17 +300,17 @@ class dataset:
             # create new sheet
             sheet = wb.create_sheet(key)
             # store data into excel
-            self.store_result_data(key, sheet, predict)
-            self.store_xgboost_setting(sheet)
+            self.__store_result_data(key, sheet, predict)
+            self.__store_xgboost_setting(sheet)
             # save the excel
-            wb.save(self.output + xlsx)
+            wb.save(self.__output + xlsx)
 
     def train_lightgbm_model(self, xlsx):
         wb = openpyxl.Workbook()
-        for key in self.keys:
-            x_train, x_test, y_train, _ = self.get_key_data(key)
+        for key in self.__keys:
+            x_train, x_test, y_train, _ = self.__read_key_data(key)
             boosting_type, num_leaves, learning_rate, max_depth = \
-                self.lightgbm.read()
+                self.__lightgbm.read()
             model = gbm.LGBMRegressor(boosting_type=boosting_type,
                                       num_leaves=num_leaves,
                                       learning_rate=learning_rate,
@@ -310,7 +319,7 @@ class dataset:
             # train lightGBM model
             model.fit(x_train, y_train)
             # save lightGBM model
-            model_name = self.output + key + '_lightgbm.pickle.dat'
+            model_name = self.__output + key + '_lightgbm.pickle.dat'
             pickle.dump(model, open(model_name, 'wb'))
             # predict x_test via lightGBM model
             predict = model.predict(x_test)
@@ -318,15 +327,15 @@ class dataset:
             # create new sheet
             sheet = wb.create_sheet(key)
             # store data into excel
-            self.store_result_data(key, sheet, predict)
-            self.store_lightgbm_setting(sheet)
+            self.__store_result_data(key, sheet, predict)
+            self.__store_lightgbm_setting(sheet)
             # save the excel
-            wb.save(self.output + xlsx)
+            wb.save(self.__output + xlsx)
 
     def train_linear_regression_model(self, xlsx):
         wb = openpyxl.Workbook()
-        for key in self.keys:
-            x_train, x_test, y_train, _ = self.get_key_data(key)
+        for key in self.__keys:
+            x_train, x_test, y_train, _ = self.__read_key_data(key)
             # normalzed
             ss = StandardScaler()
             x_train = ss.fit_transform(x_train)
@@ -336,7 +345,7 @@ class dataset:
             # train support vector regression model
             model.fit(x_train, y_train)
             # save lightGBM model
-            model_name = self.output + key + '_linear.pickle.dat'
+            model_name = self.__output + key + '_linear.pickle.dat'
             pickle.dump(model, open(model_name, 'wb'))
             # predict x_test via lightGBM model
             predict = model.predict(x_test)
@@ -344,15 +353,15 @@ class dataset:
             # create new sheet
             sheet = wb.create_sheet(key)
             # store data into excel
-            self.store_result_data(key, sheet, predict)
+            self.__store_result_data(key, sheet, predict)
             # save the excel
-            wb.save(self.output + xlsx)
+            wb.save(self.__output + xlsx)
 
     def train_svr_model(self, xlsx):
         wb = openpyxl.Workbook()
-        for key in self.keys:
-            x_train, x_test, y_train, _ = self.get_key_data(key)
-            C, kernel, gamma = self.svr.read()
+        for key in self.__keys:
+            x_train, x_test, y_train, _ = self.__read_key_data(key)
+            C, kernel, gamma = self.__svr.read()
             # normalzed
             ss = StandardScaler()
             x_train = ss.fit_transform(x_train)
@@ -362,7 +371,7 @@ class dataset:
             # train support vector regression model
             model.fit(x_train, y_train)
             # save lightGBM model
-            model_name = self.output + key + '_svr.pickle.dat'
+            model_name = self.__output + key + '_svr.pickle.dat'
             pickle.dump(model, open(model_name, 'wb'))
             # predict x_test via lightGBM model
             predict = model.predict(x_test)
@@ -370,18 +379,18 @@ class dataset:
             # create new sheet
             sheet = wb.create_sheet(key)
             # store data into excel
-            self.store_result_data(key, sheet, predict)
-            self.store_svr_setting(sheet)
+            self.__store_result_data(key, sheet, predict)
+            self.__store_svr_setting(sheet)
             # save the excel
-            wb.save(self.output + xlsx)
+            wb.save(self.__output + xlsx)
 
     def display_all_data(self):
-        for key in self.keys:
+        for key in self.__keys:
             print('-----------', key, '-----------')
-            print('x_train = ', self.x_train.get_key_data(key))
-            print('x_test = ', self.x_test.get_key_data(key))
-            print('y_train = ', self.y_train.get_key_data(key))
-            print('y_test = ', self.y_test.get_key_data(key))
+            print('x_train = ', self.__x_train.read_key_data(key))
+            print('x_test = ', self.__x_test.read_key_data(key))
+            print('y_train = ', self.__y_train.read_key_data(key))
+            print('y_test = ', self.__y_test.read_key_data(key))
 
 
 if __name__ == '__main__':
