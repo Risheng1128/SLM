@@ -39,12 +39,61 @@ class data:
     def get_key_data(self, key):
         return self.data[key]
 
+class xgboost:
+    def __init__(self):
+        self.n_estimators = 1000
+        self.learning_rate = 0.3
+        self.max_depth = 5
+
+    def write(self, n_estimators=1000, learning_rate=0.3, max_depth=5):
+        self.n_estimators = n_estimators
+        self.learning_rate = learning_rate
+        self.max_depth = max_depth
+
+    def read(self):
+        return self.n_estimators, self.learning_rate, self.max_depth
+
+class lightgbm:
+    def __init__(self):
+        self.boosting_type = 'gbdt'
+        self.num_leaves = 1000
+        self.learning_rate = 0.3
+        self.max_depth = 5
+
+    def write(self, boosting_type='gbdt', num_leaves=1000, learning_rate=0.3,
+              max_depth=5):
+        self.boosting_type = boosting_type
+        self.num_leaves = num_leaves
+        self.learning_rate = learning_rate
+        self.max_depth = max_depth
+
+    def read(self):
+        return self.boosting_type, self.num_leaves, \
+            self.learning_rate, self.max_depth
+
+class svr:
+    def __init__(self):
+        self.C = 1000
+        self.kernel = 'rbf'
+        self.gamma = 'auto'
+
+    def write(self, C=1000, kernel='rbf', gamma='auto'):
+        self.C = C
+        self.kernel = kernel
+        self.gamma = gamma
+
+    def read(self):
+        return self.C, self.kernel, self.gamma
+
 class dataset:
     def __init__(self, keys, output):
         self.x_train = data(keys)
         self.x_test = data(keys)
         self.y_train = data(keys)
         self.y_test = data(keys)
+        self.xgboost = xgboost()
+        self.lightgbm = lightgbm()
+        self.svr = svr()
         self.keys = keys
         self.output = output
 
@@ -184,13 +233,28 @@ class dataset:
             self.x_test.data[key] = \
                 tsne.fit_transform(self.x_test.get_key_data(key))
 
+    # set xgboost model parameter
+    def xgboost_set(self, n_estimators=1000, learning_rate=0.3, max_depth=5):
+        self.xgboost.write(n_estimators, learning_rate, max_depth)
+
+    # set xgboost model parameter
+    def lightgbm_set(self, boosting_type='gbdt', num_leaves=1000,
+                     learning_rate=0.3, max_depth=5):
+        self.xgboost.write(boosting_type, num_leaves, learning_rate, max_depth)
+
+    # set svr parameter
+    def svr_set(self, C=1000, kernel='rbf', gamma='auto'):
+        self.svr.write(C, kernel, gamma)
+
     def train_xgboost_model(self, xlsx):
         wb = openpyxl.Workbook()
         for key in self.keys:
             x_train, x_test, y_train, _ = self.get_key_data(key)
-            model = xgb.XGBRegressor(n_estimators=10000,
-                                     learning_rate=0.3,
-                                     max_depth=4)
+            n_estimators, learning_rate, max_depth = self.xgboost.read()
+            model = xgb.XGBRegressor(n_estimators=n_estimators,
+                                     learning_rate=learning_rate,
+                                     max_depth=max_depth)
+
             # train XGBoost model
             model.fit(x_train, y_train)
             # save XGBoost model
@@ -205,8 +269,13 @@ class dataset:
         wb = openpyxl.Workbook()
         for key in self.keys:
             x_train, x_test, y_train, _ = self.get_key_data(key)
-            model = gbm.LGBMRegressor(boosting_type='gbdt', num_leaves=10000,
-                                      learning_rate=0.3, max_depth=6)
+            boosting_type, num_leaves, learning_rate, max_depth = \
+                self.lightgbm.read()
+            model = gbm.LGBMRegressor(boosting_type=boosting_type,
+                                      num_leaves=num_leaves,
+                                      learning_rate=learning_rate,
+                                      max_depth=max_depth)
+
             # train lightGBM model
             model.fit(x_train, y_train)
             # save lightGBM model
@@ -241,12 +310,13 @@ class dataset:
         wb = openpyxl.Workbook()
         for key in self.keys:
             x_train, x_test, y_train, _ = self.get_key_data(key)
+            C, kernel, gamma = self.svr.read()
             # normalzed
             ss = StandardScaler()
             x_train = ss.fit_transform(x_train)
             x_test = ss.fit_transform(x_test)
 
-            model = svm.SVR(C=1000, kernel='rbf', gamma='auto')
+            model = svm.SVR(C=C, kernel=kernel, gamma=gamma)
             # train support vector regression model
             model.fit(x_train, y_train)
             # save lightGBM model
