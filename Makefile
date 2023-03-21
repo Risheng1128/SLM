@@ -44,7 +44,7 @@ geometric-transform:
 	$(PYTHON) melt_geometric.py --src $(GEOMETRIC_SRC_PATH) --dst $(GEOMETRIC_DST_PATH)
 
 # isolate every workpieces in image
-find-contours: geometric
+find-contours: geometric-transform
 	$(PYTHON) melt_contour.py --src $(CONTOUR_SRC_PATH) --mask $(CONTOUR_MASK_PATH) --dst $(CONTOUR_DST_PATH)
 
 # generate glcm feature from the workpiece images
