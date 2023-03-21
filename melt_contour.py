@@ -33,9 +33,8 @@ def create_mask_image(mask_path):
 
 # get the contours of image
 def get_contour(img):
-    ret, binary = cv.threshold(img, 127, 255, cv.THRESH_BINARY)
-    blur_img = cv.GaussianBlur(binary, (3, 3), 0)
-    canny_img = cv.Canny(blur_img, 80, 200)
+    _, binary = cv.threshold(img, 127, 255, cv.THRESH_BINARY)
+    canny_img = cv.Canny(binary, 80, 200)
     contours, _ = cv.findContours(
         canny_img.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     return contours
