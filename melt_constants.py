@@ -15,6 +15,7 @@ output_header = ['prediction', 'true', 'error(%)', 'train number',
                  'R2 score', 'MSE', 'MAE']
 xgboost_header = ['n estimator', 'learning rate', 'max depth']
 lightgbm_header = ['boosting type', 'num leaves', 'learning rate', 'max depth']
+logistic_header = ['max iter', 'random state']
 svr_header = ['C', 'kernel', 'gamma']
 
 # dictionary key

@@ -166,6 +166,14 @@ class dataset:
         self.__store_data(sheet, const.lightgbm_header, 3, 4)
         self.__store_data(sheet, datas, 4, 4)
 
+    # store logistic regression model setting into excel
+    def __store_logistic_setting(self, sheet):
+        max_iter, random_state = self.__logistic.read()
+        datas = [max_iter, random_state]
+
+        self.__store_data(sheet, const.logistic_header, 3, 4)
+        self.__store_data(sheet, datas, 4, 4)
+
     # store SVR model setting into excel
     def __store_svr_setting(self, sheet):
         C, kernel, gamma = self.__svr.read()
@@ -400,6 +408,7 @@ class dataset:
             sheet = wb.create_sheet(key)
             # store data into excel
             self.__store_result_data(key, sheet, predict)
+            self.__store_logistic_setting(sheet)
             # save the excel
             wb.save(self.__output + xlsx)
 
