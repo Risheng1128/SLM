@@ -295,7 +295,7 @@ class dataset:
     def svr_set(self, C=1000, kernel='rbf', gamma='auto'):
         self.__svr.write(C, kernel, gamma)
 
-    def train_xgboost_model(self, xlsx):
+    def xgboost(self, xlsx):
         wb = openpyxl.Workbook()
         for key in self.__keys:
             x_train, x_test, y_train, _ = self.__read_key_data(key)
@@ -321,7 +321,7 @@ class dataset:
             model_name = self.__output + key + '_xgboost.pickle.dat'
             pickle.dump(model, open(model_name, 'wb'))
 
-    def train_lightgbm_model(self, xlsx):
+    def lightgbm(self, xlsx):
         wb = openpyxl.Workbook()
         for key in self.__keys:
             x_train, x_test, y_train, _ = self.__read_key_data(key)
@@ -349,7 +349,7 @@ class dataset:
             model_name = self.__output + key + '_lightgbm.pickle.dat'
             pickle.dump(model, open(model_name, 'wb'))
 
-    def train_linear_regression_model(self, xlsx):
+    def linear_regression(self, xlsx):
         wb = openpyxl.Workbook()
         for key in self.__keys:
             x_train, x_test, y_train, _ = self.__read_key_data(key)
@@ -407,7 +407,7 @@ class dataset:
             model_name = self.__output + key + '_logistic.pickle.dat'
             pickle.dump(model, open(model_name, 'wb'))
 
-    def train_svr_model(self, xlsx):
+    def svr(self, xlsx):
         wb = openpyxl.Workbook()
         for key in self.__keys:
             x_train, x_test, y_train, _ = self.__read_key_data(key)
@@ -473,22 +473,22 @@ if __name__ == '__main__':
     tensile_data_set.load_data(bone_filepath, bone_property_filepath)
     tensile_data_set.reshape_and_repeat((-1, 13), repeat=layer)
     tensile_data_set.mutual_information(retain_feature)
-    tensile_data_set.train_xgboost_model(xlsx='tensile_xgboost.xlsx')
-    tensile_data_set.train_lightgbm_model(xlsx='tensile_lightgbm.xlsx')
-    tensile_data_set.train_linear_regression_model(xlsx='tensile_linear.xlsx')
+    tensile_data_set.xgboost(xlsx='tensile_xgboost.xlsx')
+    tensile_data_set.lightgbm(xlsx='tensile_lightgbm.xlsx')
+    tensile_data_set.linear_regression(xlsx='tensile_linear.xlsx')
     tensile_data_set.logistic_regression(xlsx='tensile_logistic.xlsx')
-    tensile_data_set.train_svr_model(xlsx='tensile_svr.xlsx')
+    tensile_data_set.svr(xlsx='tensile_svr.xlsx')
 
     # train permeability model
     pmb_data_set = dataset(const.pmb_key, output=args.dst)
     pmb_data_set.load_data(ring_filepath, ring_property_filepath)
     pmb_data_set.reshape_and_repeat((-1, 13), repeat=layer)
     pmb_data_set.mutual_information(retain_feature)
-    pmb_data_set.train_xgboost_model(xlsx='pmb_xgboost.xlsx')
-    pmb_data_set.train_lightgbm_model(xlsx='pmb_lightgbm.xlsx')
-    pmb_data_set.train_linear_regression_model(xlsx='pmb_linear.xlsx')
+    pmb_data_set.xgboost(xlsx='pmb_xgboost.xlsx')
+    pmb_data_set.lightgbm(xlsx='pmb_lightgbm.xlsx')
+    pmb_data_set.linear_regression(xlsx='pmb_linear.xlsx')
     pmb_data_set.logistic_regression(xlsx='pmb_logistic.xlsx')
-    pmb_data_set.train_svr_model(xlsx='pmb_svr.xlsx')
+    pmb_data_set.svr(xlsx='pmb_svr.xlsx')
 
     # train iron loss model
     iron_data_set = dataset(const.iron_key, output=args.dst)
@@ -497,8 +497,8 @@ if __name__ == '__main__':
     iron_data_set.mutual_information(retain_feature)
     iron_data_set.unique(layer)
     iron_data_set.reshape_and_repeat((-1, layer * retain_feature), repeat=1)
-    iron_data_set.train_xgboost_model(xlsx='iron_xgboost.xlsx')
-    iron_data_set.train_lightgbm_model(xlsx='iron_lightgbm.xlsx')
-    iron_data_set.train_linear_regression_model(xlsx='iron_linear.xlsx')
+    iron_data_set.xgboost(xlsx='iron_xgboost.xlsx')
+    iron_data_set.lightgbm(xlsx='iron_lightgbm.xlsx')
+    iron_data_set.linear_regression(xlsx='iron_linear.xlsx')
     iron_data_set.logistic_regression(xlsx='iron_logistic.xlsx')
-    iron_data_set.train_svr_model(xlsx='iron_svr.xlsx')
+    iron_data_set.svr(xlsx='iron_svr.xlsx')
