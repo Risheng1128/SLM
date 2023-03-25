@@ -306,6 +306,9 @@ class dataset:
         self.__lightgbm.write(boosting_type, num_leaves,
                               learning_rate, max_depth)
 
+    def logistic_set(self, max_iter=10000, random_state=0):
+        self.__logistic.write(max_iter=max_iter, random_state=random_state)
+
     # set SVR model parameter
     def svr_set(self, C=1000, kernel='rbf', gamma='auto'):
         self.__svr.write(C, kernel, gamma)
