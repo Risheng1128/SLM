@@ -495,8 +495,6 @@ if __name__ == '__main__':
     iron_data_set.load_data(ring_filepath, ring_property_filepath)
     iron_data_set.reshape_and_repeat((-1, 13), repeat=layer)
     iron_data_set.mutual_information(retain_feature)
-    iron_data_set.unique(layer)
-    iron_data_set.reshape_and_repeat((-1, layer * retain_feature), repeat=1)
     iron_data_set.xgboost(xlsx='iron_xgboost.xlsx')
     iron_data_set.lightgbm(xlsx='iron_lightgbm.xlsx')
     iron_data_set.linear_regression(xlsx='iron_linear.xlsx')
