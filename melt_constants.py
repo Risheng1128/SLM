@@ -13,12 +13,20 @@ error_data = 'X'
 output_header = ['prediction', 'true', 'error(%)', 'train number',
                  'test number', 'feature numebr', 'remove feature',
                  'R2 score', 'MSE', 'MAE']
-xgboost_header = ['n estimator', 'learning rate', 'max depth']
-lightgbm_header = ['boosting type', 'num leaves', 'learning rate', 'max depth']
-logistic_header = ['max iter', 'random state']
-svr_header = ['C', 'kernel', 'gamma']
 
-xgboost_parameter = ['n_estimator', 'learning_rate', 'max_depth']
+# model default parameters
+xgboost_parameter = {'n_estimators': 1000,
+                     'learning_rate': 0.3,
+                     'max_depth': 5}
+lightgbm_parameter = {'boosting_type': 'gbdt',
+                      'num_leaves': 1000,
+                      'learning_rate': 0.3,
+                      'max_depth': 5}
+logistic_parameter = {'max_iter': 10000,
+                      'random_state': 0}
+svr_parameter = {'C': 1000,
+                 'kernel': 'rbf',
+                 'gamma': 'auto'}
 
 # dictionary key
 tensile_key = ['tensile']
