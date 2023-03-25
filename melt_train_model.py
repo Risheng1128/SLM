@@ -11,7 +11,9 @@ import melt_constants as const
 from sklearn import metrics
 from sklearn import svm
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
 from sklearn.feature_selection import mutual_info_regression
 from sklearn.feature_selection import SelectKBest
 from sklearn.decomposition import PCA
@@ -74,6 +76,18 @@ class lightgbm:
         return self.__boosting_type, self.__num_leaves, \
             self.__learning_rate, self.__max_depth
 
+class logistic_regression:
+    def __init__(self):
+        self.__max_iter = 10000
+        self.__random_state = 0
+
+    def write(self, max_iter=10000, random_state=0):
+        self.__max_iter = max_iter
+        self.__random_state = random_state
+
+    def read(self):
+        return self.__max_iter, self.__random_state
+
 class svr:
     def __init__(self):
         self.__C = 1000
@@ -96,6 +110,7 @@ class dataset:
         self.__y_test = data(keys)
         self.__xgboost = xgboost()
         self.__lightgbm = lightgbm()
+        self.__logistic = logistic_regression()
         self.__svr = svr()
         self.__keys = keys
         self.__output = output
@@ -360,6 +375,38 @@ class dataset:
             model_name = self.__output + key + '_linear.pickle.dat'
             pickle.dump(model, open(model_name, 'wb'))
 
+    def logistic_regression(self, xlsx):
+        wb = openpyxl.Workbook()
+        for key in self.__keys:
+            x_train, x_test, y_train, _ = self.__read_key_data(key)
+            max_iter, random_state = self.__logistic.read()
+            encoder = LabelEncoder()
+            y_train = encoder.fit_transform(y_train)
+
+            # normalzed
+            ss = StandardScaler()
+            x_train = ss.fit_transform(x_train)
+            x_test = ss.fit_transform(x_test)
+
+            model = LogisticRegression(max_iter=max_iter,
+                                       random_state=random_state)
+            # train logistic regression model
+            model.fit(x_train, y_train)
+            # predict y_test via logistic regression model
+            predict = model.predict(x_test)
+            predict = encoder.inverse_transform(predict)
+
+            # create new sheet
+            sheet = wb.create_sheet(key)
+            # store data into excel
+            self.__store_result_data(key, sheet, predict)
+            # save the excel
+            wb.save(self.__output + xlsx)
+
+            # save logistic regression model
+            model_name = self.__output + key + '_logistic.pickle.dat'
+            pickle.dump(model, open(model_name, 'wb'))
+
     def train_svr_model(self, xlsx):
         wb = openpyxl.Workbook()
         for key in self.__keys:
@@ -426,11 +473,10 @@ if __name__ == '__main__':
     tensile_data_set.load_data(bone_filepath, bone_property_filepath)
     tensile_data_set.reshape_and_repeat((-1, 13), repeat=layer)
     tensile_data_set.mutual_information(retain_feature)
-    tensile_data_set.unique(layer)
-    tensile_data_set.reshape_and_repeat((-1, layer * retain_feature), repeat=1)
     tensile_data_set.train_xgboost_model(xlsx='tensile_xgboost.xlsx')
     tensile_data_set.train_lightgbm_model(xlsx='tensile_lightgbm.xlsx')
     tensile_data_set.train_linear_regression_model(xlsx='tensile_linear.xlsx')
+    tensile_data_set.logistic_regression(xlsx='tensile_logistic.xlsx')
     tensile_data_set.train_svr_model(xlsx='tensile_svr.xlsx')
 
     # train permeability model
@@ -441,6 +487,7 @@ if __name__ == '__main__':
     pmb_data_set.train_xgboost_model(xlsx='pmb_xgboost.xlsx')
     pmb_data_set.train_lightgbm_model(xlsx='pmb_lightgbm.xlsx')
     pmb_data_set.train_linear_regression_model(xlsx='pmb_linear.xlsx')
+    pmb_data_set.logistic_regression(xlsx='pmb_logistic.xlsx')
     pmb_data_set.train_svr_model(xlsx='pmb_svr.xlsx')
 
     # train iron loss model
@@ -453,4 +500,5 @@ if __name__ == '__main__':
     iron_data_set.train_xgboost_model(xlsx='iron_xgboost.xlsx')
     iron_data_set.train_lightgbm_model(xlsx='iron_lightgbm.xlsx')
     iron_data_set.train_linear_regression_model(xlsx='iron_linear.xlsx')
+    iron_data_set.logistic_regression(xlsx='iron_logistic.xlsx')
     iron_data_set.train_svr_model(xlsx='iron_svr.xlsx')
