@@ -123,6 +123,13 @@ class dataset:
             self.__y_train.read_key_data(key), \
             self.__y_test.read_key_data(key)
 
+    # do standard scaler tp x_train and x_test
+    def __standard_scaler(self, x_train, x_test):
+        ss = StandardScaler()
+        x_train = ss.fit_transform(x_train)
+        x_test = ss.fit_transform(x_test)
+        return x_train, x_test
+
     # store data in excel (row direction)
     def __store_data(self, sheet, datas, base_row, base_col):
         for col, data in zip(range(base_col, base_col + len(datas)), datas):
@@ -361,10 +368,7 @@ class dataset:
         wb = openpyxl.Workbook()
         for key in self.__keys:
             x_train, x_test, y_train, _ = self.__read_key_data(key)
-            # normalzed
-            ss = StandardScaler()
-            x_train = ss.fit_transform(x_train)
-            x_test = ss.fit_transform(x_test)
+            x_train, x_test = self.__standard_scaler(x_train, x_test)
 
             model = LinearRegression()
             # train linear regression model
@@ -387,14 +391,10 @@ class dataset:
         wb = openpyxl.Workbook()
         for key in self.__keys:
             x_train, x_test, y_train, _ = self.__read_key_data(key)
+            x_train, x_test = self.__standard_scaler(x_train, x_test)
             max_iter, random_state = self.__logistic.read()
             encoder = LabelEncoder()
             y_train = encoder.fit_transform(y_train)
-
-            # normalzed
-            ss = StandardScaler()
-            x_train = ss.fit_transform(x_train)
-            x_test = ss.fit_transform(x_test)
 
             model = LogisticRegression(max_iter=max_iter,
                                        random_state=random_state)
@@ -420,11 +420,8 @@ class dataset:
         wb = openpyxl.Workbook()
         for key in self.__keys:
             x_train, x_test, y_train, _ = self.__read_key_data(key)
+            x_train, x_test = self.__standard_scaler(x_train, x_test)
             C, kernel, gamma = self.__svr.read()
-            # normalzed
-            ss = StandardScaler()
-            x_train = ss.fit_transform(x_train)
-            x_test = ss.fit_transform(x_test)
 
             model = svm.SVR(C=C, kernel=kernel, gamma=gamma)
             # train SVR model
