@@ -18,6 +18,8 @@ lightgbm_header = ['boosting type', 'num leaves', 'learning rate', 'max depth']
 logistic_header = ['max iter', 'random state']
 svr_header = ['C', 'kernel', 'gamma']
 
+xgboost_parameter = ['n_estimator', 'learning_rate', 'max_depth']
+
 # dictionary key
 tensile_key = ['tensile']
 pmb_key = ['pmb_50Hz', 'pmb_200Hz', 'pmb_400Hz', 'pmb_800Hz']

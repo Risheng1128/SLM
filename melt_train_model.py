@@ -18,6 +18,7 @@ from sklearn.feature_selection import mutual_info_regression
 from sklearn.feature_selection import SelectKBest
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from sklearn.model_selection import GridSearchCV
 
 class data:
     def __init__(self, keys):
@@ -116,6 +117,7 @@ class dataset:
         self.__output = output
         self.__feature_num = {key: feature_num for key in keys}
         self.__remove_feature = {key: [] for key in keys}
+        self.__grid_search_parameter
 
     def __read_key_data(self, key):
         return self.__x_train.read_key_data(key), \
@@ -312,6 +314,16 @@ class dataset:
     # set SVR model parameter
     def svr_set(self, C=1000, kernel='rbf', gamma='auto'):
         self.__svr.write(C, kernel, gamma)
+
+    def grid_search_set(self, parameter):
+        self.__grid_search_parameter = parameter
+
+    def grid_search(self, model):
+        for key in self.__keys:
+            x_train, _, y_train, _ = self.__read_key_data(key)
+            grid_search = GridSearchCV(model, self.__grid_search_parameter)
+            grid_search.fit(x_train, y_train)
+            print(grid_search.cv_results_)
 
     def xgboost(self, xlsx):
         wb = openpyxl.Workbook()
