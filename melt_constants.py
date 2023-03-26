@@ -28,6 +28,16 @@ svr_parameter = {'C': 1000,
                  'kernel': 'rbf',
                  'gamma': 'auto'}
 
+# default train and test data
+bone_filepath = ['./data/glcm-data/第一批狗骨頭.xlsx',
+                 './data/glcm-data/第二批狗骨頭.xlsx']
+bone_property_filepath = ['./data/glcm-data/第一批狗骨頭材料特性.xlsx',
+                          './data/glcm-data/第二批狗骨頭材料特性.xlsx']
+ring_filepath = ['./data/glcm-data/第一批圓環.xlsx',
+                 './data/glcm-data/第二批圓環.xlsx']
+ring_property_filepath = ['./data/glcm-data/第一批圓環材料特性.xlsx',
+                          './data/glcm-data/第二批圓環材料特性.xlsx']
+
 # dictionary key
 tensile_key = ['tensile']
 pmb_key = ['pmb_50Hz', 'pmb_200Hz', 'pmb_400Hz', 'pmb_800Hz']

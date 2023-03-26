@@ -245,29 +245,53 @@ class dataset:
     def svr_set(self, parameters):
         self.__svr.write_all(parameters)
 
-    def grid_search(self, model, parameter):
+    def grid_search(self, model, parameter,
+                    standard_scaler=False, encode=False):
         for key in self.__keys:
             x_train, x_test, y_train, y_test = self.__read_train_and_test(key)
+            if standard_scaler:
+                x_train, x_test = self.__standard_scaler(x_train, x_test)
+            if encode:
+                encode = LabelEncoder()
+                y_train = encode.fit_transform(y_train)
             scorer = metrics.make_scorer(metrics.r2_score)
             grid_search = GridSearchCV(estimator=model,
                                        param_grid=parameter,
                                        scoring=scorer)
             grid_search.fit(x_train, y_train)
-            print(grid_search.best_params_)
-            print(grid_search.best_score_)
-            print(grid_search.score(x_test, y_test))
+            print('----------------------', key, '----------------------')
+            print('feature number = ', self.__feature_num.read(key))
+            print('best parameters: ', grid_search.best_params_)
+            if encode:
+                predict = grid_search.predict(x_test)
+                predict = encode.inverse_transform(predict)
+                print('r2 score: ', metrics.r2_score(y_test, predict))
+            else:
+                print('r2 score: ', grid_search.score(x_test, y_test))
 
-    def random_search(self, model, parameter):
+    def random_search(self, model, parameter,
+                      standard_scaler=False, encode=False):
         for key in self.__keys:
             x_train, x_test, y_train, y_test = self.__read_train_and_test(key)
+            if standard_scaler:
+                x_train, x_test = self.__standard_scaler(x_train, x_test)
+            if encode:
+                encode = LabelEncoder()
+                y_train = encode.fit_transform(y_train)
             scorer = metrics.make_scorer(metrics.r2_score)
             random_search = RandomizedSearchCV(estimator=model,
                                                param_distributions=parameter,
                                                scoring=scorer)
             random_search.fit(x_train, y_train)
-            print(random_search.best_params_)
-            print(random_search.best_score_)
-            print(random_search.score(x_test, y_test))
+            print('----------------------', key, '----------------------')
+            print('feature number = ', self.__feature_num.read(key))
+            print('best parameters: ', random_search.best_params_)
+            if encode:
+                predict = random_search.predict(x_test)
+                predict = encode.inverse_transform(predict)
+                print('r2 score: ', metrics.r2_score(y_test, predict))
+            else:
+                print('r2 score: ', random_search.score(x_test, y_test))
 
     def xgboost(self, xlsx):
         wb = openpyxl.Workbook()
@@ -425,23 +449,12 @@ if __name__ == '__main__':
     if not os.path.isdir(args.dst):
         os.makedirs(args.dst)
 
-    bone_filepath = ['./data/glcm-data/第一批狗骨頭.xlsx',
-                     './data/glcm-data/第二批狗骨頭.xlsx']
-
-    bone_property_filepath = ['./data/glcm-data/第一批狗骨頭材料特性.xlsx',
-                              './data/glcm-data/第二批狗骨頭材料特性.xlsx']
-
-    ring_filepath = ['./data/glcm-data/第一批圓環.xlsx',
-                     './data/glcm-data/第二批圓環.xlsx']
-
-    ring_property_filepath = ['./data/glcm-data/第一批圓環材料特性.xlsx',
-                              './data/glcm-data/第二批圓環材料特性.xlsx']
-
     # train tensile model
     retain_feature = 10
     layer = 70
     tensile_data_set = dataset(const.tensile_key, output=args.dst)
-    tensile_data_set.load_data(bone_filepath, bone_property_filepath)
+    tensile_data_set.load_data(const.bone_filepath,
+                               const.bone_property_filepath)
     tensile_data_set.reshape_and_repeat((-1, 13), repeat=layer)
     tensile_data_set.mutual_information(retain_feature)
     tensile_data_set.xgboost(xlsx='tensile_xgboost.xlsx')
@@ -452,7 +465,7 @@ if __name__ == '__main__':
 
     # train permeability model
     pmb_data_set = dataset(const.pmb_key, output=args.dst)
-    pmb_data_set.load_data(ring_filepath, ring_property_filepath)
+    pmb_data_set.load_data(const.ring_filepath, const.ring_property_filepath)
     pmb_data_set.reshape_and_repeat((-1, 13), repeat=layer)
     pmb_data_set.mutual_information(retain_feature)
     pmb_data_set.xgboost(xlsx='pmb_xgboost.xlsx')
@@ -463,7 +476,7 @@ if __name__ == '__main__':
 
     # train iron loss model
     iron_data_set = dataset(const.iron_key, output=args.dst)
-    iron_data_set.load_data(ring_filepath, ring_property_filepath)
+    iron_data_set.load_data(const.ring_filepath, const.ring_property_filepath)
     iron_data_set.reshape_and_repeat((-1, 13), repeat=layer)
     iron_data_set.mutual_information(retain_feature)
     iron_data_set.xgboost(xlsx='iron_xgboost.xlsx')
