@@ -78,7 +78,6 @@ class dataset:
         self.__remove_feature = data(keys=keys)
         self.__keys = keys
         self.__output = output
-        self.__grid_search_parameter = None
 
     # read train and test data based on key
     def __read_train_and_test(self, key):
@@ -245,15 +244,17 @@ class dataset:
     def svr_set(self, parameters):
         self.__svr.write_all(parameters)
 
-    def grid_search_set(self, parameter):
-        self.__grid_search_parameter = parameter
-
-    def grid_search(self, model):
+    def grid_search(self, model, parameter):
         for key in self.__keys:
-            x_train, _, y_train, _ = self.__read_train_and_test(key)
-            grid_search = GridSearchCV(model, self.__grid_search_parameter)
+            x_train, x_test, y_train, y_test = self.__read_train_and_test(key)
+            scorer = metrics.make_scorer(metrics.r2_score)
+            grid_search = GridSearchCV(estimator=model,
+                                       param_grid=parameter,
+                                       scoring=scorer)
             grid_search.fit(x_train, y_train)
-            print(grid_search.cv_results_)
+            print(grid_search.best_params_)
+            print(grid_search.best_score_)
+            print(grid_search.score(x_test, y_test))
 
     def xgboost(self, xlsx):
         wb = openpyxl.Workbook()
