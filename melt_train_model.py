@@ -19,6 +19,7 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV
 
 class data:
     def __init__(self, keys=None, datas=None):
@@ -255,6 +256,18 @@ class dataset:
             print(grid_search.best_params_)
             print(grid_search.best_score_)
             print(grid_search.score(x_test, y_test))
+
+    def random_search(self, model, parameter):
+        for key in self.__keys:
+            x_train, x_test, y_train, y_test = self.__read_train_and_test(key)
+            scorer = metrics.make_scorer(metrics.r2_score)
+            random_search = RandomizedSearchCV(estimator=model,
+                                               param_distributions=parameter,
+                                               scoring=scorer)
+            random_search.fit(x_train, y_train)
+            print(random_search.best_params_)
+            print(random_search.best_score_)
+            print(random_search.score(x_test, y_test))
 
     def xgboost(self, xlsx):
         wb = openpyxl.Workbook()
