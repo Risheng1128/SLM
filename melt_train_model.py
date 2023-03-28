@@ -455,6 +455,7 @@ class dataset:
             pickle.dump(model, open(model_name, 'wb'))
 
     def display_all_data(self):
+        np.set_printoptions(threshold=np.inf)
         for key in self.__keys:
             print('-----------', key, '-----------')
             print('x_train = ', self.__x_train.read(key))
