@@ -3,11 +3,14 @@ layer_header = ['layer']
 feature_header = ['energy', 'entropy', 'contrast', 'idm', 'autocorrelation',
                   'mean_x', 'mean_y', 'variance_x', 'variance_y',
                   'standard_deviation_x', 'standard_deviation_y',
-                  'correlation', 'dissimilarity']
+                  'correlation', 'dissimilarity', 'oxygen concentration',
+                  'laser power', 'scanning velocity', 'layer height',
+                  'energy density']
 
 # material property excel information
 trail_header = ['trail']
 error_data = 'X'
+printer_parameter_col = 5
 
 # output excel information
 output_header = ['prediction', 'true', 'error(%)', 'train number',

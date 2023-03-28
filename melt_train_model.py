@@ -36,7 +36,7 @@ class data:
         self.__data[key].append(data)
 
     def reshape(self, key, shape):
-        self.__data[key] = np.reshape(np.array(self.__data[key]), shape)
+        self.__data[key] = np.reshape(self.__data[key], shape)
 
     def repeat(self, key, repeat):
         self.__data[key] = np.repeat(self.__data[key], repeat)
@@ -126,32 +126,51 @@ class dataset:
         self.__store_row_data(sheet, datas, 4, 4)
 
     # load workpiece and material property data from excel
-    def load_data(self, workpiece_filepath, property_filepath, header=[]):
+    # wpfp: workpiece filepath
+    # ppfp: property filepath
+    def load_data(self, wpfp, ppfp, header=[], use_process_parameter=False):
         remove_header = const.layer_header + header
-        for wpf, ppf in zip(workpiece_filepath, property_filepath):
+
+        # wpf: workpiece file
+        # ppf: property file
+        for wpf, ppf in zip(wpfp, ppfp):
             print('read workpiece file: ', wpf)
             print('read material property file: ', ppf)
             wp_sheets = pd.read_excel(wpf, sheet_name=None)
 
+            # wpd: workpiece data
+            # ppd: property data
             for key in self.__keys:
                 # the dictionary key must same in property excel
-                pp_data = pd.read_excel(ppf, sheet_name=key)
-                pp_data = np.array(pp_data.drop(const.trail_header, axis=1))
+                ppd = pd.read_excel(ppf, sheet_name=key)
+                ppd = np.array(ppd.drop(const.trail_header, axis=1))
+                # split data
+                if use_process_parameter:
+                    process_parameter = ppd[:, 0:const.printer_parameter_col]
+                ppd = ppd[:, const.printer_parameter_col::]
                 # switch 2D array to 1D array
-                pp_data = np.reshape(pp_data, -1)
+                ppd = np.reshape(ppd, -1)
 
-                for index, sheet in zip(range(len(pp_data)), wp_sheets):
-                    wp_data = pd.read_excel(wpf, sheet_name=sheet)
-                    if pp_data[index] == const.error_data:
+                for index, sheet in zip(range(len(ppd)), wp_sheets):
+                    trail = int(sheet[5]) - 1
+                    item = sheet[-1]
+                    # check the property is legal
+                    if ppd[index] == const.error_data:
                         continue
 
-                    wp_data = wp_data.drop(remove_header, axis=1)
-                    if sheet[-1] == '5' or sheet[-1] == '6':
-                        self.__x_test.append(key, wp_data)
-                        self.__y_test.append(key, pp_data[index])
+                    wpd = pd.read_excel(wpf, sheet_name=sheet)
+                    wpd = np.array(wpd.drop(remove_header, axis=1))
+                    # add process parameter into train and test data
+                    if use_process_parameter:
+                        wpd = np.array(
+                              [np.concatenate([wp, process_parameter[trail]])
+                              for wp in wpd])
+                    if item == '5' or item == '6':
+                        self.__x_test.append(key, wpd)
+                        self.__y_test.append(key, ppd[index])
                     else:
-                        self.__x_train.append(key, wp_data)
-                        self.__y_train.append(key, pp_data[index])
+                        self.__x_train.append(key, wpd)
+                        self.__y_train.append(key, ppd[index])
 
     # change the data shape or repeat same data
     def reshape_and_repeat(self, shape, repeat=1):
