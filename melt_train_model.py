@@ -212,8 +212,8 @@ class dataset:
                 denominator2 += y_tmp ** 2
 
             r = numerator / (np.sqrt(denominator1) * np.sqrt(denominator2))
-            if self.__use_proc_param:
-                features = const.feature + const.proc_param
+            features = const.feature if self.__use_proc_param == False \
+                else const.feature + const.proc_param
             print('----------', key, '----------')
             for feature, i in zip(features, r):
                 print(feature, ': ', i)
@@ -231,9 +231,8 @@ class dataset:
 
             # record retained feature number
             self.__feature_num.write(key, k)
-
-            if self.__use_proc_param:
-                features = const.feature + const.proc_param
+            features = const.feature if self.__use_proc_param == False \
+                else const.feature + const.proc_param
             # record removed feature
             for feature, support in zip(features, supports):
                 if support == False:
