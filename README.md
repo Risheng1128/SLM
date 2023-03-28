@@ -102,6 +102,8 @@ make train-model
 ## Reference
 * [lightGBM manual](https://lightgbm.readthedocs.io/en/v3.3.2/)
 * [XGBoost manual](https://xgboost.readthedocs.io/en/stable/)
+* [linear regression manual](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html)
+* [logistic regression manual](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html)
 * [SVR manual](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html)
 * [Using Machine Learning with Detectron2](https://www.youtube.com/watch?v=eUSgtfK4ivk&ab_channel=MetaOpenSource)
 * [Detectron2 Custom Object Detection, Custom Instance Segmentation: Part I](https://www.youtube.com/watch?v=ffTURA0JM1Q&ab_channel=TheCodingBug)
