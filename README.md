@@ -86,6 +86,20 @@ Show the CT image in dicom viewer:
 make computed-tomography
 ```
 
+**Dataset Format**: To predict the material property via training the regression model, like xgboost and svr. Please obey the dataset format as following:
+
+In GLCM dataset, keep the name of sheet is similar with **traila_0b**. "b" means the group number that workpieces producted by the same produce parameter. "b" means the label of workpieces in one group.
+
+| layer | energy | entropy | contrast | idm | autocorrelation | mean_x | mean_y | variance_x | variance_y | standard_deviation_x | standard_deviation_y | correlation | dissimilarity |
+| ----- | ------ | ------- | -------- | --- | --------------- | ------ | ------ | ---------- | ---------- | -------------------- | -------------------- | ----------- | ------------- |
+| 7 | 0.00 | 8.32 | 112,897.64 | 0.15 | 18,438.60 | 130.59 | 130.55 | 1,592.05 | 1,592.05 | 39.90 |　39.90 | 0.87 | 10.53 |
+
+In material property dataset, keep the name of sheet is same as the property key. In the other hand, the dataset is combine with the process parameters and material property. Set the option `use_proc_param` true if you want to add process parameter into train dataset and test dataset. Finally, keep the following dataset format:
+
+| oxygen concentration | laser power | scanning velocity | layer height | energy density | trail | item1 | item2 | item3 | item4 | item5 | item6 |
+| -------------------- | ----------- | ----------------- | ------ | -------------- | ----- | ----- | ----- | ----- | ----- | ----- | ----- |
+| 0 | 150 | 400 | 0.05 | 115.39 | 1 | 820.91 | 836.36 | X | X | 842.98 | X |
+
 **Regression model**: Use [XGBoost](https://github.com/dmlc/xgboost), [lightGBM](https://github.com/microsoft/LightGBM), [Linear Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html) and [SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html) to predict the material property include [permeability](https://en.wikipedia.org/wiki/Permeability_(electromagnetism)), [core loss](https://en.wikipedia.org/wiki/Magnetic_core#Core_loss) and [ultimate tensile strength](https://en.wikipedia.org/wiki/Ultimate_tensile_strength) via data generated from [GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix#Other_applications). The GLCM data can be found in folder `/data/glcm-data/`.
 
 Install the necessary packages:
