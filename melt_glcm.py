@@ -187,7 +187,7 @@ def compute_idm(glcm):
     return idm
 
 def create_header(sheet):
-    headers = const.layer_header + const.feature_header
+    headers = const.layer_label + const.feature
     for col, header in zip(range(1, len(headers) + 1), headers):
         sheet.cell(1, col).value = header
 
@@ -196,8 +196,8 @@ def store_data(sheet, feature, layer_num):
     # store layer number
     sheet.cell(row, 1).value = layer_num
     # store layer data
-    for col, header in zip(range(2, len(const.feature_header) + 2),
-                           const.feature_header):
+    for col, header in zip(range(2, len(const.feature) + 2),
+                           const.feature):
         sheet.cell(row, col).value = feature[header]
 
 
@@ -232,7 +232,7 @@ if __name__ == '__main__':
         for j in range(layer_num):
             img = cv.imread(layer_list[j])
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-            feature = {feature: 0 for feature in const.feature_header}
+            feature = {feature: 0 for feature in const.feature}
 
             for z in [0, 45, 90, 135]:
                 glcm = get_glcm(img, distance=1, angle=z, levels=8)

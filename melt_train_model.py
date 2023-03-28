@@ -79,6 +79,7 @@ class dataset:
         self.__remove_feature = data(keys=keys)
         self.__keys = keys
         self.__output = output
+        self.__use_proc_param = False
 
     # read train and test data based on key
     def __read_train_and_test(self, key):
@@ -146,6 +147,9 @@ class dataset:
                 ppd = np.array(ppd.drop(const.trail_label, axis=1))
                 # split data
                 if use_proc_param:
+                    # set totoal feature number
+                    self.__feature_num.write(key, 18)
+                    self.__use_proc_param = True
                     proc_param = ppd[:, 0:const.printer_param_col]
                 ppd = ppd[:, const.printer_param_col::]
                 # switch 2D array to 1D array
@@ -208,8 +212,10 @@ class dataset:
                 denominator2 += y_tmp ** 2
 
             r = numerator / (np.sqrt(denominator1) * np.sqrt(denominator2))
+            if self.__use_proc_param:
+                features = const.feature + const.proc_param
             print('----------', key, '----------')
-            for feature, i in zip(const.feature, r):
+            for feature, i in zip(features, r):
                 print(feature, ': ', i)
 
     # compute mutual information and retain "k" best data
@@ -225,8 +231,11 @@ class dataset:
 
             # record retained feature number
             self.__feature_num.write(key, k)
+
+            if self.__use_proc_param:
+                features = const.feature + const.proc_param
             # record removed feature
-            for feature, support in zip(const.feature, supports):
+            for feature, support in zip(features, supports):
                 if support == False:
                     self.__remove_feature.append(key, feature)
 

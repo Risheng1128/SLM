@@ -2,9 +2,9 @@
 layer_label = ['layer']
 feature = ['energy', 'entropy', 'contrast', 'idm', 'autocorrelation', 'mean_x',
            'mean_y', 'variance_x', 'variance_y', 'standard_deviation_x',
-           'standard_deviation_y', 'correlation', 'dissimilarity',
-           'oxygen concentration', 'laser power', 'scanning velocity',
-           'layer height', 'energy density']
+           'standard_deviation_y', 'correlation', 'dissimilarity']
+proc_param = ['oxygen concentration', 'laser power', 'scanning velocity',
+              'layer height', 'energy density']
 
 # material property excel information
 trail_label = ['trail']
