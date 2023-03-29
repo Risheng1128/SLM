@@ -6,8 +6,7 @@ import os
 import openpyxl
 import glob
 
-# compute gray-level co-occurrence matrix
-def get_glcm(img, vmin=0, vmax=255, levels=8, distance=1.0, angle=0.0):
+class GLCM:
     '''
     Parameters
     ----------
@@ -23,182 +22,207 @@ def get_glcm(img, vmin=0, vmax=255, levels=8, distance=1.0, angle=0.0):
         pixel pair distance offsets [pixel] (1.0, 2.0, and etc.)
     angle: float
         pixel pair angles [degree] (0.0, 30.0, 45.0, 90.0, and etc.)
-
-    Returns
-    -------
-    Grey-level co-occurrence matrix
-    shape = (levels, levels)
     '''
-    h, w = img.shape
-    # digitize
-    bins = np.linspace(vmin, vmax + 1, levels + 1)
-    gl1 = np.digitize(img, bins) - 1
+    def __init__(self, img, vmin=0, vmax=255, levels=8,
+                 distance=1.0, angle=0.0):
+        self.__img = img
+        self.__vmin = vmin
+        self.__vmax = vmax
+        self.__levels = levels
+        self.__distance = distance
+        self.__angle = angle
+        self.__glcm = self.__get_glcm()
+        # may used to compute other features
+        self.__feature = {feature: None for feature
+                          in ['mean_x', 'mean_y', 'variance_x', 'variance_y']}
 
-    # make shifted image
-    dx = distance * np.cos(np.deg2rad(angle))
-    dy = distance * np.sin(np.deg2rad(-angle))
-    mat = np.array([[1.0, 0.0, -dx], [0.0, 1.0, -dy]], dtype=np.float32)
-    gl2 = cv.warpAffine(gl1, mat, (w, h), flags=cv.INTER_NEAREST,
-                        borderMode=cv.BORDER_REPLICATE)
+    # compute gray-level co-occurrence matrix
+    def __get_glcm(self):
+        h, w = self.__img.shape
+        # digitize
+        bins = np.linspace(self.__vmin, self.__vmax + 1, self.__levels + 1)
+        gl1 = np.digitize(img, bins) - 1
 
-    # make glcm
-    glcm = np.zeros((levels, levels), dtype=np.uint8)
+        # make shifted image
+        dx = self.__distance * np.cos(np.deg2rad(self.__angle))
+        dy = self.__distance * np.sin(np.deg2rad(-self.__angle))
+        mat = np.array([[1.0, 0.0, -dx], [0.0, 1.0, -dy]], dtype=np.float32)
+        gl2 = cv.warpAffine(gl1, mat, (w, h), flags=cv.INTER_NEAREST,
+                            borderMode=cv.BORDER_REPLICATE)
 
-    for i in range(levels):
-        for j in range(levels):
-            mask = ((gl1 == i) & (gl2 == j))
-            glcm[i, j] = mask.sum()
+        # make glcm
+        glcm = np.zeros((self.__levels, self.__levels), dtype=np.uint8)
 
-    # eliminate the affect of background
-    glcm[:, 0] = 0
-    glcm[0, :] = 0
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                mask = ((gl1 == i) & (gl2 == j))
+                glcm[i, j] = mask.sum()
 
-    # normalize
-    return glcm / glcm.sum()
+        # eliminate the affect of background
+        glcm[:, 0] = 0
+        glcm[0, :] = 0
+        # normalize
+        return glcm / glcm.sum()
 
-# compute mean feature
-def compute_mean(glcm):
-    mean_x = 0
-    mean_y = 0
-    row, col = glcm.shape
+    # compute joint mean feature
+    def compute_mean(self):
+        mean_x = 0
+        mean_y = 0
 
-    for i in range(row):
-        for j in range(col):
-            mean_x += glcm[i, j] * i
-            mean_y += glcm[i, j] * j
-    return mean_x, mean_y
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                mean_x += self.__glcm[i, j] * i
+                mean_y += self.__glcm[i, j] * j
 
-# compute variance feature
-def compute_variance(glcm, mean_x, mean_y):
-    variance_x = 0
-    variance_y = 0
-    row, col = glcm.shape
+        self.__feature['mean_x'] = mean_x
+        self.__feature['mean_y'] = mean_y
+        return mean_x, mean_y
 
-    for i in range(row):
-        for j in range(col):
-            variance_x += glcm[i, j] * ((i - mean_x) ** 2)
-            variance_y += glcm[i, j] * ((i - mean_y) ** 2)
-    return variance_x, variance_y
+    # compute variance feature
+    def compute_variance(self):
+        if self.__feature['mean_x'] is None or \
+           self.__feature['mean_y'] is None:
+            self.compute_mean()
 
-# compute standard deviation feature
-def compute_standard_deviation(glcm, variance_x, variance_y):
-    return np.sqrt(variance_x), np.sqrt(variance_y)
+        variance_x = 0
+        variance_y = 0
 
-# compute cluster prominence feature
-def compute_cluster_prominence(glcm, mean_x, mean_y):
-    cluster_prominence = 0
-    row, col = glcm.shape
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                variance_x += \
+                    self.__glcm[i, j] * ((i - self.__feature['mean_x']) ** 2)
+                variance_y += \
+                    self.__glcm[i, j] * ((i - self.__feature['mean_y']) ** 2)
 
-    for i in range(row):
-        for j in range(col):
-            cluster_prominence += ((i + j - mean_x - mean_y) ** 4) * glcm[i, j]
-    return cluster_prominence
+        self.__feature['variance_x'] = variance_x
+        self.__feature['variance_y'] = variance_y
+        return variance_x, variance_y
 
-# compute cluster shade feature
-def compute_cluster_shade(glcm, mean_x, mean_y):
-    cluster_shade = 0
-    row, col = glcm.shape
+    # compute standard deviation feature
+    def compute_standard_deviation(self):
+        if self.__feature['variance_x'] is None or \
+           self.__feature['variance_y'] is None:
+            self.compute_variance()
+        return np.sqrt(variance_x), np.sqrt(variance_y)
 
-    for i in range(row):
-        for j in range(col):
-            cluster_shade += ((i + j - mean_x - mean_y) ** 3) * glcm[i, j]
-    return cluster_shade
+    # compute cluster prominence feature
+    def compute_cluster_prominence(self):
+        if self.__feature['mean_x'] is None or \
+           self.__feature['mean_y'] is None:
+            self.compute_mean()
 
-# compute cluster tendency feature
-def compute_cluster_tendency(glcm, mean_x, mean_y):
-    cluster_tendency = 0
-    row, col = glcm.shape
+        prominence = 0
+        mean_x = self.__feature['mean_x']
+        mean_y = self.__feature['mean_y']
 
-    for i in range(row):
-        for j in range(col):
-            cluster_tendency += ((i + j - mean_x - mean_y) ** 2) * glcm[i, j]
-    return cluster_tendency
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                prominence += \
+                    ((i + j - mean_x - mean_y) ** 4) * self.__glcm[i, j]
+        return prominence
 
-# compute autocorrelation feature
-def compute_autocorrelation(glcm):
-    autocorrelation = 0
-    row, col = glcm.shape
+    # compute cluster shade feature
+    def compute_cluster_shade(self):
+        if self.__feature['mean_x'] is None or \
+           self.__feature['mean_y'] is None:
+            self.compute_mean()
 
-    for i in range(row):
-        for j in range(col):
-            autocorrelation += glcm[i, j] * i * j
-    return autocorrelation
+        shade = 0
+        mean_x = self.__feature['mean_x']
+        mean_y = self.__feature['mean_y']
 
-# compute correlation feature
-def compute_correlation(glcm, mean_x, mean_y, variance_x, variance_y):
-    correlation = 0
-    row, col = glcm.shape
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                shade += ((i + j - mean_x - mean_y) ** 3) * self.__glcm[i, j]
+        return shade
 
-    for i in range(row):
-        for j in range(col):
-            correlation += glcm[i, j] * (i - mean_x) * \
-                (j - mean_y) / np.sqrt(variance_x * variance_y)
-    return correlation
+    # compute cluster tendency feature
+    def compute_cluster_tendency(self):
+        if self.__feature['mean_x'] is None or \
+           self.__feature['mean_y'] is None:
+            self.compute_mean()
 
-# compute dissimilarity feature
-def compute_dissimilarity(glcm):
-    dissimilarity = 0
-    row, col = glcm.shape
+        tendency = 0
+        mean_x = self.__feature['mean_x']
+        mean_y = self.__feature['mean_y']
 
-    for i in range(row):
-        for j in range(col):
-            dissimilarity += glcm[i, j] * np.abs(i - j)
-    return dissimilarity
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                tendency += \
+                    ((i + j - mean_x - mean_y) ** 2) * self.__glcm[i, j]
+        return tendency
 
-# compute energy feature
-def compute_energy(glcm):
-    energy = 0
-    row, col = glcm.shape
+    # compute autocorrelation feature
+    def compute_autocorrelation(self):
+        autocorrelation = 0
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                autocorrelation += self.__glcm[i, j] * i * j
+        return autocorrelation
 
-    for i in range(row):
-        for j in range(col):
-            energy += glcm[i, j] ** 2
-    return energy
+    # compute correlation feature
+    def compute_correlation(self):
+        if self.__feature['variance_x'] is None or \
+           self.__feature['variance_y'] is None:
+            self.compute_variance()
 
-# compute entropy feature
-def compute_entropy(glcm):
-    entropy = 0
-    row, col = glcm.shape
+        correlation = 0
+        mean_x = self.__feature['mean_x']
+        mean_y = self.__feature['mean_y']
+        variance_x = self.__feature['variance_x']
+        variance_y = self.__feature['variance_y']
 
-    for i in range(row):
-        for j in range(col):
-            if glcm[i, j]:
-                entropy += -np.log(glcm[i, j]) * glcm[i, j]
-    return entropy
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                tmp = self.__glcm[i, j] * (i - mean_x) * (j - mean_y)
+                correlation += tmp / np.sqrt(variance_x * variance_y)
+        return correlation
 
-# compute contrast feature
-def compute_contrast(glcm):
-    contrast = 0
-    row, col = glcm.shape
+    # compute dissimilarity feature
+    def compute_dissimilarity(self):
+        dissimilarity = 0
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                dissimilarity += self.__glcm[i, j] * np.abs(i - j)
+        return dissimilarity
 
-    for i in range(row):
-        for j in range(col):
-            contrast += glcm[j, j] * ((i - j) ** 2)
-    return contrast
+    # compute energy feature
+    def compute_energy(self):
+        energy = 0
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                energy += self.__glcm[i, j] ** 2
+        return energy
 
-# compute inverse differential moment (IDM) feature
-def compute_idm(glcm):
-    idm = 0
-    row, col = glcm.shape
+    # compute entropy feature
+    def compute_entropy(self):
+        entropy = 0
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                if self.__glcm[i, j]:
+                    entropy += -np.log(self.__glcm[i, j]) * self.__glcm[i, j]
+        return entropy
 
-    for i in range(row):
-        for j in range(col):
-            idm += glcm[i, j] / (1 + (i - j) ** 2)
-    return idm
+    # compute contrast feature
+    def compute_contrast(self):
+        contrast = 0
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                contrast += self.__glcm[i, j] * ((i - j) ** 2)
+        return contrast
 
-def create_header(sheet):
-    headers = const.layer_label + const.feature
-    for col, header in zip(range(1, len(headers) + 1), headers):
-        sheet.cell(1, col).value = header
+    # compute inverse differential moment (IDM) feature
+    def compute_idm(self):
+        idm = 0
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                idm += self.__glcm[i, j] / (1 + (i - j) ** 2)
+        return idm
 
-def store_data(sheet, feature, layer_num):
-    row = layer_num + 2
-    # store layer number
-    sheet.cell(row, 1).value = layer_num
-    # store layer data
-    for col, header in zip(range(2, len(const.feature) + 2),
-                           const.feature):
-        sheet.cell(row, col).value = feature[header]
+# store data into excel (row direction)
+def store_row_data(sheet, datas, base_row, base_col):
+    for col, data in zip(range(base_col, base_col + len(datas)), datas):
+        sheet.cell(base_row, col).value = data
 
 
 if __name__ == '__main__':
@@ -227,7 +251,8 @@ if __name__ == '__main__':
         layer_num = len(layer_list)
 
         sheet = wb.create_sheet('item' + str(i))
-        create_header(sheet)
+        # store label
+        store_row_data(sheet, const.layer_label + const.feature, 1, 1)
 
         for j in range(layer_num):
             img = cv.imread(layer_list[j])
@@ -235,34 +260,36 @@ if __name__ == '__main__':
             feature = {feature: 0 for feature in const.feature}
 
             for z in [0, 45, 90, 135]:
-                glcm = get_glcm(img, distance=1, angle=z, levels=8)
+                glcm = GLCM(img, distance=1, angle=z, levels=8)
 
-                mean_x, mean_y = compute_mean(glcm)
-                feature["mean_x"] += mean_x
-                feature["mean_y"] += mean_y
+                mean_x, mean_y = glcm.compute_mean()
+                feature['mean_x'] += mean_x
+                feature['mean_y'] += mean_y
 
-                variance_x, variance_y = compute_variance(glcm, mean_x, mean_y)
-                feature["variance_x"] += variance_x
-                feature["variance_y"] += variance_y
+                variance_x, variance_y = glcm.compute_variance()
+                feature['variance_x'] += variance_x
+                feature['variance_y'] += variance_y
 
                 standard_deviation_x, standard_deviation_y = \
-                    compute_standard_deviation(glcm, variance_x, variance_y)
-                feature["standard_deviation_x"] += standard_deviation_x
-                feature["standard_deviation_y"] += standard_deviation_y
+                    glcm.compute_standard_deviation()
+                feature['standard_deviation_x'] += standard_deviation_x
+                feature['standard_deviation_y'] += standard_deviation_y
 
-                feature["contrast"] += compute_contrast(glcm)
-                feature["autocorrelation"] += compute_autocorrelation(glcm)
-                feature["correlation"] += compute_correlation(
-                    glcm, mean_x, mean_y, variance_x, variance_y)
-                feature["dissimilarity"] += compute_dissimilarity(glcm)
-                feature["energy"] += compute_energy(glcm)
-                feature["entropy"] += compute_entropy(glcm)
-                feature["idm"] += compute_idm(glcm)
+                feature['contrast'] += glcm.compute_contrast()
+                feature['autocorrelation'] += glcm.compute_autocorrelation()
+                feature['correlation'] += glcm.compute_correlation()
+                feature['dissimilarity'] += glcm.compute_dissimilarity()
+                feature['energy'] += glcm.compute_energy()
+                feature['entropy'] += glcm.compute_entropy()
+                feature['entropy'] += glcm.compute_idm()
 
             for key, value in feature.items():
                 feature[key] = value / 4
 
-            store_data(sheet, feature, j)
+            # store feature into excel
+            store_row_data(sheet, [j + 1], j + 2, 1)
+            datas = [feature[key] for key in feature.keys()]
+            store_row_data(sheet, datas, j + 2, 2)
             wb.save(args.xlsx)
             print('finish layer: ', j + 1)
 
