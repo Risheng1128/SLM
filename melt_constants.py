@@ -1,15 +1,13 @@
-# workpiece excel information
+# excel information
 layer_label = ['layer']
 feature = ['energy', 'entropy', 'contrast', 'idm', 'autocorrelation', 'mean_x',
            'mean_y', 'variance_x', 'variance_y', 'standard_deviation_x',
            'standard_deviation_y', 'correlation', 'dissimilarity']
 proc_param = ['oxygen concentration', 'laser power', 'scanning velocity',
               'layer height', 'energy density']
-
-# material property excel information
-trail_label = ['trail']
+train_sheet = 'train'
+test_sheet = 'test'
 ignore_data = 'X'
-printer_param_col = 5
 
 # output excel information
 output_label = ['prediction', 'true', 'error(%)', 'train number',
@@ -31,14 +29,14 @@ svr_param = {'C': 1000,
              'gamma': 'auto'}
 
 # default train and test data
-bone_fp = ['./data/glcm-data/第一批狗骨頭.xlsx',
-           './data/glcm-data/第二批狗骨頭.xlsx']
-bone_ppfp = ['./data/glcm-data/第一批狗骨頭材料特性.xlsx',
-             './data/glcm-data/第二批狗骨頭材料特性.xlsx']
-ring_fp = ['./data/glcm-data/第一批圓環.xlsx',
-           './data/glcm-data/第二批圓環.xlsx']
-ring_ppfp = ['./data/glcm-data/第一批圓環材料特性.xlsx',
-             './data/glcm-data/第二批圓環材料特性.xlsx']
+bone_train_fp = ['./data/glcm-data/first_bone_train.xlsx',
+                 './data/glcm-data/second_bone_train.xlsx']
+bone_test_fp = ['./data/glcm-data/first_bone_test.xlsx',
+                './data/glcm-data/second_bone_test.xlsx']
+ring_train_fp = ['./data/glcm-data/first_ring_train.xlsx',
+                 './data/glcm-data/second_ring_train.xlsx']
+ring_test_fp = ['./data/glcm-data/first_ring_test.xlsx',
+                './data/glcm-data/second_ring_test.xlsx']
 
 # dictionary key
 tensile_key = ['tensile']

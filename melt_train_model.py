@@ -75,8 +75,8 @@ class dataset:
         self.__lightgbm = data(datas=const.lightgbm_param)
         self.__logistic = data(datas=const.logistic_param)
         self.__svr = data(datas=const.svr_param)
-        self.__feature_num = data(keys, feature_num)
         self.__remove_feature = data(keys=keys)
+        self.__feature_num = len(const.feature)
         self.__keys = keys
         self.__output = output
         self.__use_proc_param = False
@@ -103,7 +103,7 @@ class dataset:
         x_train, x_test, _, y_test = self.__read_train_and_test(key)
         datas = [x_train.shape[0],
                  x_test.shape[0],
-                 self.__feature_num.read(key),
+                 self.__feature_num,
                  ', '.join(map(str, self.__remove_feature.read(key))),
                  metrics.r2_score(y_test, predict),
                  metrics.mean_squared_error(y_test, predict),
@@ -126,54 +126,49 @@ class dataset:
         self.__store_row_data(sheet, keys, 3, 4)
         self.__store_row_data(sheet, datas, 4, 4)
 
-    # load workpiece and material property data from excel
-    # wpfp: workpiece filepath
-    # ppfp: property filepath
-    def load_data(self, wpfp, ppfp, header=[], use_proc_param=False):
+    # load data set
+    def __load_data(self, fp, x, y, sheet, header=[], use_proc_param=False):
         remove_label = const.layer_label + header
 
-        # wpf: workpiece file
-        # ppf: property file
-        for wpf, ppf in zip(wpfp, ppfp):
-            print('read workpiece file: ', wpf)
-            print('read material property file: ', ppf)
-            wp_sheets = pd.read_excel(wpf, sheet_name=None)
+        for file in fp:
+            print('read data file: ', file)
+            wp_sheets = pd.read_excel(file, sheet_name=None)
 
-            # wpd: workpiece data
-            # ppd: property data
+            # material property data
+            ppd = wp_sheets.pop(sheet)
+
+            # add process parameter into data set
+            if use_proc_param:
+                # set total feature number
+                self.__feature_num = len(const.feature) + len(const.proc_param)
+                # process parameter for each workpiece
+                proc_param = np.array(ppd[const.proc_param])
+                self.__use_proc_param = True
+
             for key in self.__keys:
-                # the dictionary key must same in property excel
-                ppd = pd.read_excel(ppf, sheet_name=key)
-                ppd = np.array(ppd.drop(const.trail_label, axis=1))
-                # split data
-                if use_proc_param:
-                    # set totoal feature number
-                    self.__feature_num.write(key, 18)
-                    self.__use_proc_param = True
-                    proc_param = ppd[:, 0:const.printer_param_col]
-                ppd = ppd[:, const.printer_param_col::]
-                # switch 2D array to 1D array
-                ppd = np.reshape(ppd, -1)
+                data = np.array(ppd[key])
 
-                for index, sheet in zip(range(len(ppd)), wp_sheets):
-                    trail = int(sheet[5]) - 1
-                    item = sheet[-1]
+                for i, features in zip(range(len(data)), wp_sheets.values()):
                     # check the property is legal
-                    if ppd[index] == const.ignore_data:
+                    if data[i] == const.ignore_data:
                         continue
 
-                    wpd = pd.read_excel(wpf, sheet_name=sheet)
-                    wpd = np.array(wpd.drop(remove_label, axis=1))
-                    # add process parameter into train and test data
+                    features = np.array(features.drop(remove_label, axis=1))
                     if use_proc_param:
-                        wpd = np.array([np.concatenate([wp, proc_param[trail]])
-                                        for wp in wpd])
-                    if item == '5' or item == '6':
-                        self.__x_test.append(key, wpd)
-                        self.__y_test.append(key, ppd[index])
-                    else:
-                        self.__x_train.append(key, wpd)
-                        self.__y_train.append(key, ppd[index])
+                        features = np.array([np.concatenate([wp, proc_param[i]])
+                                             for wp in features])
+                    x.append(key, features)
+                    y.append(key, data[i])
+
+    # load train data set
+    def load_train_data(self, train_fp, header=[], use_proc_param=False):
+        self.__load_data(train_fp, self.__x_train, self.__y_train,
+                         const.train_sheet, header, use_proc_param)
+
+    # load train data set
+    def load_test_data(self, test_fp, header=[], use_proc_param=False):
+        self.__load_data(test_fp, self.__x_test, self.__y_test,
+                         const.test_sheet, header, use_proc_param)
 
     # change the data shape or repeat same data
     def reshape_and_repeat(self, shape, repeat=1):
@@ -230,7 +225,7 @@ class dataset:
             self.__x_test.write(key, np.delete(x_test, false_index, axis=1))
 
             # record retained feature number
-            self.__feature_num.write(key, k)
+            self.__feature_num = k
             features = const.feature if self.__use_proc_param == False \
                 else const.feature + const.proc_param
             # record removed feature
@@ -285,7 +280,7 @@ class dataset:
                                        scoring=scorer)
             grid_search.fit(x_train, y_train)
             print('----------------------', key, '----------------------')
-            print('feature number = ', self.__feature_num.read(key))
+            print('feature number = ', self.__feature_num)
             print('best parameters: ', grid_search.best_params_)
             if encode:
                 predict = grid_search.predict(x_test)
@@ -308,7 +303,7 @@ class dataset:
                                                scoring=scorer)
             random_search.fit(x_train, y_train)
             print('----------------------', key, '----------------------')
-            print('feature number = ', self.__feature_num.read(key))
+            print('feature number = ', self.__feature_num)
             print('best parameters: ', random_search.best_params_)
             if encode:
                 predict = random_search.predict(x_test)
@@ -478,8 +473,9 @@ if __name__ == '__main__':
     retain_feature = 10
     layer = 70
     tensile_data_set = dataset(const.tensile_key, output=args.dst)
-    tensile_data_set.load_data(const.bone_fp, const.bone_ppfp)
-    tensile_data_set.reshape_and_repeat((-1, 13), repeat=layer)
+    tensile_data_set.load_train_data(const.bone_train_fp, [], True)
+    tensile_data_set.load_test_data(const.bone_test_fp, [], True)
+    tensile_data_set.reshape_and_repeat((-1, 18), repeat=layer)
     tensile_data_set.mutual_information(retain_feature)
     tensile_data_set.xgboost(xlsx='tensile_xgboost.xlsx')
     tensile_data_set.lightgbm(xlsx='tensile_lightgbm.xlsx')
@@ -489,8 +485,9 @@ if __name__ == '__main__':
 
     # train permeability model
     pmb_data_set = dataset(const.pmb_key, output=args.dst)
-    pmb_data_set.load_data(const.ring_fp, const.ring_ppfp)
-    pmb_data_set.reshape_and_repeat((-1, 13), repeat=layer)
+    pmb_data_set.load_train_data(const.ring_train_fp, [], True)
+    pmb_data_set.load_test_data(const.ring_test_fp, [], True)
+    pmb_data_set.reshape_and_repeat((-1, 18), repeat=layer)
     pmb_data_set.mutual_information(retain_feature)
     pmb_data_set.xgboost(xlsx='pmb_xgboost.xlsx')
     pmb_data_set.lightgbm(xlsx='pmb_lightgbm.xlsx')
@@ -500,8 +497,9 @@ if __name__ == '__main__':
 
     # train iron loss model
     iron_data_set = dataset(const.iron_key, output=args.dst)
-    iron_data_set.load_data(const.ring_fp, const.ring_ppfp)
-    iron_data_set.reshape_and_repeat((-1, 13), repeat=layer)
+    iron_data_set.load_train_data(const.ring_train_fp, [], True)
+    iron_data_set.load_test_data(const.ring_test_fp, [], True)
+    iron_data_set.reshape_and_repeat((-1, 18), repeat=layer)
     iron_data_set.mutual_information(retain_feature)
     iron_data_set.xgboost(xlsx='iron_xgboost.xlsx')
     iron_data_set.lightgbm(xlsx='iron_lightgbm.xlsx')
