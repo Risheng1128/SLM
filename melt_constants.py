@@ -32,11 +32,13 @@ svr_param = {'C': 1000,
 bone_train_fp = ['./data/glcm-data/first_bone_train.xlsx',
                  './data/glcm-data/second_bone_train.xlsx']
 bone_test_fp = ['./data/glcm-data/first_bone_test.xlsx',
-                './data/glcm-data/second_bone_test.xlsx']
+                './data/glcm-data/second_bone_test.xlsx',
+                './data/glcm-data/third_bone_test.xlsx']
 ring_train_fp = ['./data/glcm-data/first_ring_train.xlsx',
                  './data/glcm-data/second_ring_train.xlsx']
 ring_test_fp = ['./data/glcm-data/first_ring_test.xlsx',
-                './data/glcm-data/second_ring_test.xlsx']
+                './data/glcm-data/second_ring_test.xlsx',
+                './data/glcm-data/third_ring_test.xlsx']
 
 # dictionary key
 tensile_key = ['tensile']
