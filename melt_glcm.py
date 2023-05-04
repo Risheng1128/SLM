@@ -10,7 +10,7 @@ class GLCM:
     '''
     Parameters
     ----------
-    img: array_like, shape=(h,w), dtype=np.uint8
+    img: array_like, shape=(h,w), dtype=np.uint32
         input image
     vmin: int
         minimum value of input image
@@ -51,7 +51,7 @@ class GLCM:
                             borderMode=cv.BORDER_REPLICATE)
 
         # make glcm
-        glcm = np.zeros((self.__levels, self.__levels), dtype=np.uint8)
+        glcm = np.zeros((self.__levels, self.__levels), dtype=np.uint32)
 
         for i in range(self.__levels):
             for j in range(self.__levels):
