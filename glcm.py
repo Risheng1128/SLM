@@ -10,8 +10,10 @@ class GLCM:
     '''
     Parameters
     ----------
-    img: array_like, shape=(h,w), dtype=np.uint32
+    img: array_like, shape=(h,w,n), dtype=np.uint32
         input image
+    layer: int
+        layer number
     vmin: int
         minimum value of input image
     vmax: int
@@ -23,7 +25,7 @@ class GLCM:
     angle: float
         pixel pair angles [degree] (0.0, 30.0, 45.0, 90.0, and etc.)
     '''
-    def __init__(self, img, vmin=0, vmax=255, levels=8,
+    def __init__(self, img, layer, vmin=0, vmax=255, levels=8,
                  distance=1.0, angle=0.0):
         self.__img = img
         self.__vmin = vmin
@@ -31,17 +33,25 @@ class GLCM:
         self.__levels = levels
         self.__distance = distance
         self.__angle = angle
-        self.__glcm = self.__get_glcm()
+        self.__glcm = self.__get_glcm(layer)
         # may used to compute other features
         self.__feature = {feature: None for feature
                           in ['mean_x', 'mean_y', 'variance_x', 'variance_y']}
 
+    def __compute_glcm(self, gl1, gl2):
+        glcm = np.zeros((self.__levels, self.__levels), dtype=np.uint32)
+        for i in range(self.__levels):
+            for j in range(self.__levels):
+                mask = ((gl1 == i) & (gl2 == j))
+                glcm[i, j] = mask.sum()
+        return glcm
+
     # compute gray-level co-occurrence matrix
-    def __get_glcm(self):
-        h, w = self.__img.shape
+    def __get_glcm(self, layer):
+        h, w, n = self.__img.shape
         # digitize
         bins = np.linspace(self.__vmin, self.__vmax + 1, self.__levels + 1)
-        gl1 = np.digitize(img, bins) - 1
+        gl1 = np.digitize(self.__img[:, :, layer], bins) - 1
 
         # make shifted image
         dx = self.__distance * np.cos(np.deg2rad(self.__angle))
@@ -51,12 +61,16 @@ class GLCM:
                             borderMode=cv.BORDER_REPLICATE)
 
         # make glcm
-        glcm = np.zeros((self.__levels, self.__levels), dtype=np.uint32)
+        glcm = self.__compute_glcm(gl1, gl2)
 
-        for i in range(self.__levels):
-            for j in range(self.__levels):
-                mask = ((gl1 == i) & (gl2 == j))
-                glcm[i, j] = mask.sum()
+        # add different layer
+        if layer == 0:
+            glcm += self.__compute_glcm(gl1, self.__img[:, :, 1])
+        elif layer == n - 1:
+            glcm += self.__compute_glcm(gl1, self.__img[:, :, layer - 1])
+        else:
+            glcm += self.__compute_glcm(gl1, self.__img[:, :, layer - 1])
+            glcm += self.__compute_glcm(gl1, self.__img[:, :, layer + 1])
 
         # eliminate the affect of background
         glcm[:, 0] = 0
@@ -241,10 +255,9 @@ if __name__ == '__main__':
     item_list = os.listdir(args.src)
     item_list = sorted([i for i in item_list])
     item_list = [args.src + i + '/' for i in item_list]
-    item_num = len(item_list)
 
     wb = openpyxl.Workbook()
-    for i in range(item_num):
+    for i in range(len(item_list)):
         layer_list = list(
             enumerate(glob.glob(os.path.join(item_list[i], "*.jpg"))))
         layer_list = sorted([i[1] for i in layer_list])
@@ -254,13 +267,18 @@ if __name__ == '__main__':
         # store label
         store_row_data(sheet, const.layer_label + const.feature, 1, 1)
 
+        row, col = cv.imread(layer_list[0], cv.IMREAD_GRAYSCALE).shape
+        img = np.zeros((row, col, layer_num), dtype=np.uint8)
+        # read all images in one of the workpieces
         for j in range(layer_num):
-            img = cv.imread(layer_list[j])
-            img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+            new_img = cv.imread(layer_list[j], cv.IMREAD_GRAYSCALE)
+            img[:, :, j] = new_img
+
+        for j in range(layer_num):
             feature = {feature: 0 for feature in const.feature}
 
             for z in [0, 45, 90, 135]:
-                glcm = GLCM(img, distance=1, angle=z, levels=8)
+                glcm = GLCM(img, j, distance=1, angle=z, levels=256)
 
                 mean_x, mean_y = glcm.compute_mean()
                 feature['mean_x'] += mean_x
