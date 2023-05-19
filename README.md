@@ -1,60 +1,26 @@
 # SLM
 A research focusing on [selective laser melting (SLM)](https://en.wikipedia.org/wiki/Selective_laser_melting).
 
-The project is divided into two parts — recoating and melting.
+The research goal is using images to predict the material properties of workpieces. The project focus on the [permeability](https://en.wikipedia.org/wiki/Permeability_(electromagnetism)), [core loss](https://en.wikipedia.org/wiki/Magnetic_core#Core_loss) and [ultimate tensile strength](https://en.wikipedia.org/wiki/Ultimate_tensile_strength).
 
-In recoating part, the project applies the [Mask R-CNN](https://github.com/matterport/Mask_RCNN) model with [detectron2](https://ai.facebook.com/tools/detectron2/) to detect the recoating defects. On the other hand, there are three types of recoating defects — powder uneven, powder uncover and scratch. It can be found in [labels.txt](/data/recoat/labels.txt).
-
-In melting part, the research goal is using images to predict the material properties of workpieces. The project focus on the [permeability](https://en.wikipedia.org/wiki/Permeability_(electromagnetism)), [core loss](https://en.wikipedia.org/wiki/Magnetic_core#Core_loss) and [ultimate tensile strength](https://en.wikipedia.org/wiki/Ultimate_tensile_strength).
-
-## Build and Verify
-### Recoating
-**Install [detectron2](https://ai.facebook.com/tools/detectron2/) and other packages**:
-```
-pip3 install torch==1.10.1+cu111 torchvision==0.11.2+cu111 torchaudio==0.10.1 -f https://download.pytorch.org/whl/torch_stable.html
-pip3 install detectron2 -f   https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
-pip3 install labelme opencv-python colorama matplotlib
-```
-
-**Intall [labelme](https://github.com/wkentaro/labelme)**: Use labelme to annotate images and `labelme2coco.py` in labelme convert images to coco format.
-```
-pip install labelme
-```
-
-**Train Mask R-CNN model**: Use [recoat_mskrcnn.py](recoat_mskrcnn.py) to train Mask R-CNN model.
-```
-make train-mask-rcnn
-```
-
-**Convert image to [coco dataset](https://cocodataset.org)**: Use labelme2coco.py in [labelme](https://github.com/wkentaro/labelme) project to convert label file to COCO dataset.
-```
-make labelme2coco
-```
-
-**Convert [ground truth](https://en.wikipedia.org/wiki/Ground_truth) mask**: Use [recoat_json2mask.py](recoat_json2mask.py) to generate mask file. The `.json` file will be generated to mask, and we will use the `label.png` to compute dice coefficient.
-```
-make gen-mask
-```
-
-**Load model and detect image**: Use [recoat_detect.py](recoat_detect.py) to load recoating model and detect the images. By default, it uses the `recoat.pth` in folder `model`.
-```
-make detect-defects
-```
-
-**Recoat detecting system**: Use [recoat_system.py](recoat_system.py) to open the recoat detecting system. Before open the system, installing the pyqt5:
-```
-sudo apt-get install qt5-default
-sudo apt-get install qttools5-dev-tools
-sudo pip3 install pyqt5
-make recoat_system
-```
-
-### Melting
+## Used Packages
 Download the used package:
 ```
 pip3 install colorama opencv-python openpyxl
 ```
 
+Download the packages to show the CT image in dicom viewer
+```
+pip3 install vtk pydicom PyQt5
+```
+
+Download the packages to train the models:
+```
+pip3 install xgboost lightgbm pandas openpyxl
+pip install -U scikit-learn
+```
+
+## Verify
 **Geometric Transform**: The following image is orignal SLM image and the project annotates it to get the four point in order to make use of geometric transform. The point can be found in [origin.json](data/geometric/origin.json)
 
 ![](data/geometric/origin.jpg)
@@ -76,19 +42,14 @@ make gen-glcm
 
 **Computed Tomography (CT)**: Use computed tomography image make us observe workpiece quality more clearly. In this project, using file `melt_jpg2dicom.py` to convert the `.jpg` files to `.dcm` files which usually are applied in biomedical field. On the other hand, display the dicom image by file `melt_dicom_viewer.py` the reference to [QtVTKDICOMViewer](https://github.com/RasmusRPaulsen/QtVTKDICOMViewer).
 
-Before showing the CT images, download the necessary packages:
-```
-pip3 install vtk pydicom PyQt5
-```
-
 Show the CT image in dicom viewer:
 ```
 make computed-tomography
 ```
 
-**Dataset Format**: To predict the material property via training the regression model, like xgboost and svr. Please obey the dataset format as following:
+**Dataset Format**: To predict the material property via training the regression model, like xgboost and svm. Please obey the dataset format as following:
 
-In GLCM dataset, keep the name of sheet is similar with **traila_0b**. "b" means the group number that workpieces producted by the same produce parameter. "b" means the label of workpieces in one group.
+In GLCM dataset, keep the name of sheet is similar with **traila_0b**. "a" means the group number that workpieces producted by the same produce parameter. "b" means the label of workpieces in one group.
 
 | layer | energy | entropy | contrast | idm | autocorrelation | mean_x | mean_y | variance_x | variance_y | standard_deviation_x | standard_deviation_y | correlation | dissimilarity |
 | ----- | ------ | ------- | -------- | --- | --------------- | ------ | ------ | ---------- | ---------- | -------------------- | -------------------- | ----------- | ------------- |
@@ -100,13 +61,7 @@ In material property dataset, keep the name of sheet is same as the property key
 | -------------------- | ----------- | ----------------- | ------ | -------------- | ----- | ----- | ----- | ----- | ----- | ----- | ----- |
 | 0 | 150 | 400 | 0.05 | 115.39 | 1 | 820.91 | 836.36 | X | X | 842.98 | X |
 
-**Regression model**: Use [XGBoost](https://github.com/dmlc/xgboost), [lightGBM](https://github.com/microsoft/LightGBM), [Linear Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html) and [SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html) to predict the material property include [permeability](https://en.wikipedia.org/wiki/Permeability_(electromagnetism)), [core loss](https://en.wikipedia.org/wiki/Magnetic_core#Core_loss) and [ultimate tensile strength](https://en.wikipedia.org/wiki/Ultimate_tensile_strength) via data generated from [GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix#Other_applications). The GLCM data can be found in folder `/data/glcm-data/`.
-
-Install the necessary packages:
-```
-pip3 install xgboost lightgbm pandas openpyxl
-pip install -U scikit-learn
-```
+**Regression model**: Use [XGBoost](https://github.com/dmlc/xgboost), [lightGBM](https://github.com/microsoft/LightGBM), [Linear Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html) and [SVM](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html) to predict the material property include [permeability](https://en.wikipedia.org/wiki/Permeability_(electromagnetism)), [core loss](https://en.wikipedia.org/wiki/Magnetic_core#Core_loss) and [ultimate tensile strength](https://en.wikipedia.org/wiki/Ultimate_tensile_strength) via data generated from [GLCM](https://en.wikipedia.org/wiki/Co-occurrence_matrix#Other_applications). The GLCM data can be found in folder `/data/glcm-data/`.
 
 Train the XGBoost, lightGBM, Linear Regression or SVR model:
 ```
@@ -118,7 +73,4 @@ make train-model
 * [XGBoost manual](https://xgboost.readthedocs.io/en/stable/)
 * [linear regression manual](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html)
 * [logistic regression manual](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html)
-* [SVR manual](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html)
-* [Using Machine Learning with Detectron2](https://www.youtube.com/watch?v=eUSgtfK4ivk&ab_channel=MetaOpenSource)
-* [Detectron2 Custom Object Detection, Custom Instance Segmentation: Part I](https://www.youtube.com/watch?v=ffTURA0JM1Q&ab_channel=TheCodingBug)
-* [Detectron2 Custom Object Detection, Custom Instance Segmentation: Part II](https://www.youtube.com/watch?v=GoItxr16ae8&ab_channel=TheCodingBug)
+* [SVM manual](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html)

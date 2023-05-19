@@ -3,10 +3,10 @@ import os
 import xgboost as xgb
 sys.path.append(os.getcwd())
 
-from melt_train_model import dataset
-from melt_constants import tensile_key, pmb_key, iron_key
-from melt_constants import bone_train_fp, bone_test_fp
-from melt_constants import ring_train_fp, ring_test_fp
+from train_model import dataset
+from constant import tensile_key, pmb_key, iron_key
+from constant import bone_train_fp, bone_test_fp
+from constant import ring_train_fp, ring_test_fp
 
 xgboost_param = {'learning_rate': [0.1, 0.15, 0.2, 0.25, 0.3,
                                    0.35, 0.4, 0.45, 0.5],

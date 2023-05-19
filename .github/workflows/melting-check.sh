@@ -13,9 +13,3 @@ make find-contour
 make gen-glcm
 # train regression model
 make train-model
-
-# check grid search and random search
-python3 tests/lightgbm_hyper.py
-python3 tests/xgboost_hyper.py
-python3 tests/svr_hyper.py
-python3 tests/logistic_hyper.py

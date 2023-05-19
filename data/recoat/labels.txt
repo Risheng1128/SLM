@@ -1,4 +1,0 @@
-__ignore__
-powder_uneven
-powder_uncover
-scratch

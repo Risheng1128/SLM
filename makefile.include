@@ -1,18 +1,5 @@
 RESULT = ./result
 DATA = ./data
-MODEL = ./model
-
-# the path to get coco format files and train them
-export COCO_SRC_PATH ?= $(DATA)/recoat/
-export COCO_DST_PATH ?= $(RESULT)/coco/
-export LABEL_PATH ?= $(DATA)/recoat/labels.txt
-export RCNN_SRC_PATH ?= $(RESULT)/coco/
-export RCNN_DST_PATH ?= $(RESULT)/model/
-
-# the path to load model and detect recoating defects
-export DETECT_SRC_PATH ?= $(RECOAT)/
-export DETECT_DST_PATH ?= $(RESULT)/detect/
-export DETECT_MODEL ?= $(MODEL)/recoat.pth
 
 # the geometric transform files
 export GEOMETRIC_SRC_PATH ?= $(DATA)/melt/
