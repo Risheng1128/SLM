@@ -281,7 +281,7 @@ if __name__ == '__main__':
                 feature['dissimilarity'] += glcm.compute_dissimilarity()
                 feature['energy'] += glcm.compute_energy()
                 feature['entropy'] += glcm.compute_entropy()
-                feature['entropy'] += glcm.compute_idm()
+                feature['idm'] += glcm.compute_idm()
 
             for key, value in feature.items():
                 feature[key] = value / 4
