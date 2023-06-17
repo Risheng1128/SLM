@@ -215,10 +215,13 @@ class dataset:
 
     # compute mutual information and retain "k" best data
     def mutual_information(self, k=3):
+        mi = data(keys=self.__keys)
         for key in self.__keys:
             x_train, x_test, y_train, _ = self.__read_train_and_test(key)
             selector = SelectKBest(mutual_info_regression, k=k)
             self.__x_train.write(key, selector.fit_transform(x_train, y_train))
+            # store the mutual information
+            mi.write(key, selector.scores_)
             # find the index of removed feature
             supports = selector.get_support()
             false_index = np.where(supports == False)[0]
@@ -232,6 +235,7 @@ class dataset:
             for feature, support in zip(features, supports):
                 if support == False:
                     self.__remove_feature.append(key, feature)
+        return mi
 
     # principal component analysis
     def PCA(self, components):
