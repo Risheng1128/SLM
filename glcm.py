@@ -272,6 +272,7 @@ if __name__ == '__main__':
         # read all images in one of the workpieces
         for j in range(layer_num):
             new_img = cv.imread(layer_list[j], cv.IMREAD_GRAYSCALE)
+            new_img = cv.resize(new_img, (col, row), interpolation=cv.INTER_AREA)
             img[:, :, j] = new_img
 
         for j in range(layer_num):
