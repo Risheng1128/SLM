@@ -8,7 +8,7 @@ import colorama
 from utils import progress_bar
 
 def rotate_img(img):
-    (h, w, d) = img.shape
+    (h, w, _) = img.shape
     center = (w // 2, h // 2)
     M = cv.getRotationMatrix2D(center, -90, 1.0)
     return cv.warpAffine(img, M, (w, h))
@@ -19,7 +19,6 @@ def create_mask_image(mask_path):
     mask = cv.imread(mask_path)
     mask = rotate_img(mask)
 
-    rows, cols = mask.shape[:2]
     mask = cv.resize(mask, (new_width, new_height))
     mask = cv.resize(mask, None, fx=1.46, fy=1.48,
                      interpolation=cv.INTER_LINEAR)
